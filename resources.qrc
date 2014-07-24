@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>trash.svg</file>
+        <file>positions.json</file>
+    </qresource>
+</RCC>
