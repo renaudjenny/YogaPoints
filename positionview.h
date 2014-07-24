@@ -3,18 +3,20 @@
 
 #include <QWidget>
 #include <QtWidgets>
-#include "yogapoint.h"
+#include "position.h"
+#include "serie.h"
 
 class PositionView : public QWidget
 {
     Q_OBJECT
 public:
     explicit PositionView(QWidget *parent = 0);
+    ~PositionView();
     const QPushButton *getGoBackButton();
 private:
     QTableWidget *m_positionTable;
     QMap<QString, unsigned int> m_positionList;
-    QList<YogaPoint> m_positions;
+    QList<YogaPoint*> m_positions;
     QComboBox *m_addPositionComboBox;
     QSpinBox *m_addPositionSpinBox;
     QLabel *m_timesPointLabel;

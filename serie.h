@@ -9,11 +9,11 @@ class Serie : public YogaPoint
 {
 public:
     Serie();
-    Serie(int id, const QString &name, unsigned int points);
+    Serie(int id, const QString &name, QList<YogaPoint*> yogaPositions);
     ~Serie();
     unsigned int calculatePoints();
 private:
-    QList<Position> m_positions;
+    QList<YogaPoint*> m_positions;
 };
 
 #endif // SERIE_H

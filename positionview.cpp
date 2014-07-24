@@ -13,7 +13,7 @@ PositionView::PositionView(QWidget *parent) :
         QString positionName = selectPosition.value(1).toString();
         int positionPoint = selectPosition.value(2).toInt();
         m_positionList[positionName] = positionPoint;
-        m_positions.append(YogaPoint(positionId, positionName, positionPoint));
+        m_positions.append(new Position(positionId, positionName, positionPoint));
     }
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
@@ -37,7 +37,7 @@ PositionView::PositionView(QWidget *parent) :
     m_addPositionComboBox->setEditable(true);
     QStringList positionNames;
     for (auto it = m_positions.begin(); it != m_positions.end(); it++) {
-        positionNames << it->name();
+        positionNames << (*it)->name();
     }
     m_addPositionComboBox->addItems(positionNames);
 
@@ -69,7 +69,17 @@ PositionView::PositionView(QWidget *parent) :
     connect(m_validateButton, SIGNAL(clicked()), this, SLOT(validateDailyPositions()));
     connect(m_calendar, SIGNAL(clicked(QDate)), this, SLOT(dateSelected(QDate)));
 
-    positionChanged(m_positions.first().name());
+    positionChanged(m_positions.first()->name());
+}
+
+PositionView::~PositionView()
+{
+    std::for_each(m_positions.begin(), m_positions.end(), [](YogaPoint* position) { delete position; });
+    /*
+    for(YogaPoint* position : m_positions) {
+       delete position;
+    }
+    */
 }
 
 void PositionView::addPosition()
@@ -93,8 +103,8 @@ void PositionView::addPosition()
 void PositionView::positionChanged(const QString &text)
 {
     for (auto it = m_positions.begin(); it != m_positions.end(); it++) {
-        if (it->name() == text) {
-            m_timesPointLabel->setText(tr("x %1 points").arg(it->calculatePoints()));
+        if ((*it)->name() == text) {
+            m_timesPointLabel->setText(tr("x %1 points").arg((*it)->calculatePoints()));
         }
     }
 }
@@ -135,8 +145,8 @@ void PositionView::updatePoints(int row, int column)
             QString times = m_positionTable->item(i, 1)->text();
             int points = 0;
             for (auto it = m_positions.begin(); it != m_positions.end(); it++) {
-                if (it->name() == positionName) {
-                    points = it->calculatePoints() * times.toInt();
+                if ((*it)->name() == positionName) {
+                    points = (*it)->calculatePoints() * times.toInt();
                 }
             }
             QTableWidgetItem *pointsItem = new QTableWidgetItem(QString::number(points));
@@ -166,12 +176,12 @@ void PositionView::validateDailyPositions()
         QTableWidgetItem *timesItem = m_positionTable->item(i, 1);
         if (positionNameItem && timesItem) {
             QString positionName = m_positionTable->item(i, 0)->text();
-            YogaPoint yogaPoint = YogaPoint::yogaPointFromDatabase(positionName, this);
+            Position position = Position::positionFromDatabase(positionName, this);
             QString times = m_positionTable->item(i, 1)->text();
             QSqlQuery insertDailyPositions;
             if (insertDailyPositions.prepare("INSERT INTO daily_positions VALUES (?, ?, ?)")) {
                 insertDailyPositions.addBindValue(selectedDay);
-                insertDailyPositions.addBindValue(yogaPoint.id());
+                insertDailyPositions.addBindValue(position.id());
                 insertDailyPositions.addBindValue(times);
                 if (!insertDailyPositions.exec()) {
                     QMessageBox::critical(this, tr("Database error"), insertDailyPositions.lastError().text());
@@ -198,8 +208,8 @@ void PositionView::dateSelected(const QDate &date)
         int positionId = selectDailyPositions.value(0).toInt();
         int times = selectDailyPositions.value(1).toInt();
         m_positionTable->setRowCount(row + 1);
-        YogaPoint yogaPoint = YogaPoint::yogaPointFromDatabase(positionId, this);
-        QTableWidgetItem *positionNameItem = new QTableWidgetItem(yogaPoint.name());
+        Position position = Position::positionFromDatabase(positionId, this);
+        QTableWidgetItem *positionNameItem = new QTableWidgetItem(position.name());
         m_positionTable->setItem(row, 0, positionNameItem);
 
         QTableWidgetItem *timesItem = new QTableWidgetItem(QString::number(times));
