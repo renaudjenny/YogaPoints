@@ -16,6 +16,35 @@ PositionView::PositionView(QWidget *parent) :
         m_positions.append(new Position(positionId, positionName, positionPoint));
     }
 
+    //series
+    QSqlQuery selectSerie("SELECT id, name FROM series GROUP BY id");
+    while (selectSerie.next()) {
+        int serieId = selectSerie.value(0).toInt();
+        QString serieName = selectSerie.value(1).toString();
+        QList<YogaPoint*> seriePositionList;
+        QSqlQuery selectSeriePosition("SELECT position_id FROM series WHERE id = ?");
+        selectSeriePosition.addBindValue(serieId);
+        if (!selectSeriePosition.exec()) {
+            QMessageBox::critical(this, tr("Database error"), selectSeriePosition.lastError().text());
+        }
+        while (selectSeriePosition.next()) {
+            //use position pointer from m_positions
+            int positionId = selectSeriePosition.value(0).toInt();
+            for (YogaPoint* position : m_positions) {
+                if (position->id() == positionId) {
+                    seriePositionList.append(position);
+                }
+            }
+        }
+        qDebug() << serieName;
+        m_positions.append(new Serie(serieId, serieName, seriePositionList));
+    }
+    /* DEBUG */
+    qDebug() << endl << endl;
+    for (YogaPoint* yogaPoint : m_positions) {
+        qDebug() << "Name: " << yogaPoint->name() << ", Points: " << yogaPoint->calculatePoints();
+    }
+
     QVBoxLayout *mainLayout = new QVBoxLayout;
     QLabel *title = new QLabel(tr("Position"));
     m_positionTable = new QTableWidget(0, 4);
@@ -75,11 +104,6 @@ PositionView::PositionView(QWidget *parent) :
 PositionView::~PositionView()
 {
     std::for_each(m_positions.begin(), m_positions.end(), [](YogaPoint* position) { delete position; });
-    /*
-    for(YogaPoint* position : m_positions) {
-       delete position;
-    }
-    */
 }
 
 void PositionView::addPosition()

@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>trash.svg</file>
         <file>positions.json</file>
+        <file>series.json</file>
     </qresource>
 </RCC>

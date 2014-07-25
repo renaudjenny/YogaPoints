@@ -44,6 +44,48 @@ MainWindow::MainWindow(QWidget *parent)
             }
         }
 
+        //we'll set serie table on database
+        if (!createTableQuery.prepare("CREATE TABLE IF NOT EXISTS series (id INT, name VARCHAR(100), position_id INT)")) {
+            QMessageBox::critical(this, tr("Database error"), createTableQuery.lastError().text());
+        }
+        if (!createTableQuery.exec()) {
+            QMessageBox::critical(this, tr("Database error"), createTableQuery.lastError().text());
+        }
+
+        //we read position from JSON file and copy them in Database if positions is empty
+        QSqlQuery selectCountSeries("SELECT COUNT(*) FROM series");
+        selectCountSeries.next();
+        int serieCount = selectCountSeries.value(0).toInt();
+
+        if (serieCount == 0)
+        {
+            QFile serieJsonFile(":/series.json");
+            if (serieJsonFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+                QString jsonString = serieJsonFile.readAll();
+                serieJsonFile.close();
+                QJsonDocument serieJson = QJsonDocument::fromJson(jsonString.toUtf8());
+                QJsonObject series = serieJson.object();
+                int i = 0;
+                for (QJsonObject::iterator it = series.begin(); it != series.end(); it++) {
+                    QString serieName = it.key();
+                    QJsonArray seriePositionNames = it.value().toArray();
+                    for (QJsonArray::iterator iit = seriePositionNames.begin(); iit != seriePositionNames.end(); iit++) {
+                        Position position = Position::positionFromDatabase((*iit).toString(), this);
+                        QSqlQuery insertSerieQuery;
+                        insertSerieQuery.prepare("INSERT INTO series (id, name, position_id) VALUES (?, ?, ?)");
+                        insertSerieQuery.addBindValue(i);
+                        insertSerieQuery.addBindValue(serieName);
+                        insertSerieQuery.addBindValue(position.id());
+                        insertSerieQuery.exec();
+                    }
+                    i++;
+                }
+            } else {
+                QMessageBox::warning(this, tr("Error while reading JSON position file"),
+                    tr("Couldn't open JSON position file"));
+            }
+        }
+
         //now we create a table recording daily positions
         QSqlQuery CreateTableDailyPositionsQuery;
         if (!CreateTableDailyPositionsQuery.prepare("CREATE TABLE IF NOT EXISTS daily_positions (days DATE, position_id INT, times TINYINT)")) {
@@ -58,6 +100,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_positionView = new PositionView(this);
     setCentralWidget(m_positionView);
+
+    /* DEBUG
+    QSqlQuery query("SELECT id, name, position_id FROM series");
+    while (query.next()) {
+        qDebug() << "id: " << query.value(0).toInt() << ", name: " << query.value(1).toString() << ", position id: " << query.value(2).toInt();
+    }
+    */
 }
 
 MainWindow::~MainWindow()
