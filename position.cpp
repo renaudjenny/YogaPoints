@@ -1,8 +1,4 @@
 #include "position.h"
-#include <QSqlQuery>
-#include <QMessageBox>
-#include <QVariant>
-#include <QSqlError>
 
 Position::Position()
 {

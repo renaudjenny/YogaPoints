@@ -12,7 +12,6 @@ You can add, change, remove positions and points in the *position.json* file (a 
 The aim of this app is to see your progress day by day.
 
 #Next Features (current development)
-* Serie: a serie of positions
 * Won't reset database at each run... :-/
   * But a new feture allowing managing positions/series name and points
 * Charts for week, month, etc. to view your progress

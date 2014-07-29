@@ -1,7 +1,4 @@
 #include "yogapoint.h"
-#include "databasemanager.h"
-#include <QMessageBox>
-#include <QObject>
 
 YogaPoint::YogaPoint()
 {
@@ -38,4 +35,15 @@ void YogaPoint::setPoint(int points)
 void YogaPoint::setName(const QString &name)
 {
     m_name = name;
+}
+
+bool YogaPoint::isSerie(const QString &positionName, QWidget* window)
+{
+    QSqlQuery query("SELECT COUNT(*) FROM series WHERE name = ?");
+    query.addBindValue(positionName);
+    if (!query.exec()) {
+        QMessageBox::critical(window, "Database error", query.lastError().text());
+    }
+    query.next();
+    return query.value(0).toInt() > 0;
 }

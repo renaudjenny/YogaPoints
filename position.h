@@ -2,6 +2,10 @@
 #define POSITION_H
 
 #include "yogapoint.h"
+#include <QSqlQuery>
+#include <QMessageBox>
+#include <QVariant>
+#include <QSqlError>
 
 class Position : public YogaPoint
 {

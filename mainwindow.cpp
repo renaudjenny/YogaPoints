@@ -88,7 +88,7 @@ MainWindow::MainWindow(QWidget *parent)
 
         //now we create a table recording daily positions
         QSqlQuery CreateTableDailyPositionsQuery;
-        if (!CreateTableDailyPositionsQuery.prepare("CREATE TABLE IF NOT EXISTS daily_positions (days DATE, position_id INT, times TINYINT)")) {
+        if (!CreateTableDailyPositionsQuery.prepare("CREATE TABLE IF NOT EXISTS daily_positions (days DATE, position_id INT, times TINYINT, is_serie BOOLEAN DEFAULT 0 NOT NULL)")) {
             QMessageBox::critical(this, tr("Database error"), CreateTableDailyPositionsQuery.lastError().text());
         }
         if (!CreateTableDailyPositionsQuery.exec()) {

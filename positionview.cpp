@@ -6,6 +6,7 @@
 PositionView::PositionView(QWidget *parent) :
     QWidget(parent)
 {
+    //Populate position list
     //find positions from database
     QSqlQuery selectPosition("SELECT id, name, point FROM positions");
     while (selectPosition.next()) {
@@ -16,7 +17,7 @@ PositionView::PositionView(QWidget *parent) :
         m_positions.append(new Position(positionId, positionName, positionPoint));
     }
 
-    //series
+    //find series from database
     QSqlQuery selectSerie("SELECT id, name FROM series GROUP BY id");
     while (selectSerie.next()) {
         int serieId = selectSerie.value(0).toInt();
@@ -36,7 +37,6 @@ PositionView::PositionView(QWidget *parent) :
                 }
             }
         }
-        qDebug() << serieName;
         m_positions.append(new Serie(serieId, serieName, seriePositionList));
     }
     /* DEBUG */
@@ -47,10 +47,13 @@ PositionView::PositionView(QWidget *parent) :
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
     QLabel *title = new QLabel(tr("Position"));
+
     m_positionTable = new QTableWidget(0, 4);
+    //Position (name), Times (number of position), Points (calculated value), Trash icon
     m_positionTable->setHorizontalHeaderLabels(QStringList(tr("Position")) << tr("Times") << tr("Points") << "");
     m_positionTable->verticalHeader()->setVisible(false);
     m_positionTable->setShowGrid(false);
+
     //set an icon instead of "+"
     QWidget *addPositionWidget = new QWidget;
     QHBoxLayout *addPositionLayout = new QHBoxLayout;
@@ -69,6 +72,7 @@ PositionView::PositionView(QWidget *parent) :
         positionNames << (*it)->name();
     }
     m_addPositionComboBox->addItems(positionNames);
+    m_addPositionComboBox->setInsertPolicy(QComboBox::NoInsert);
 
     //add addPosition widgets to layout
     addPositionWidget->setLayout(addPositionLayout);
@@ -200,19 +204,28 @@ void PositionView::validateDailyPositions()
         QTableWidgetItem *timesItem = m_positionTable->item(i, 1);
         if (positionNameItem && timesItem) {
             QString positionName = m_positionTable->item(i, 0)->text();
-            Position position = Position::positionFromDatabase(positionName, this);
+
+            bool isSerie = YogaPoint::isSerie(positionName, this);
+            YogaPoint *yogaPoint = 0;
+            if (isSerie) {
+                yogaPoint = new Serie(Serie::serieFromDatabase(positionName, m_positions, this));
+            } else {
+                yogaPoint = new Position(Position::positionFromDatabase(positionName, this));
+            }
             QString times = m_positionTable->item(i, 1)->text();
             QSqlQuery insertDailyPositions;
-            if (insertDailyPositions.prepare("INSERT INTO daily_positions VALUES (?, ?, ?)")) {
+            if (insertDailyPositions.prepare("INSERT INTO daily_positions VALUES (?, ?, ?, ?)")) {
                 insertDailyPositions.addBindValue(selectedDay);
-                insertDailyPositions.addBindValue(position.id());
+                insertDailyPositions.addBindValue(yogaPoint->id());
                 insertDailyPositions.addBindValue(times);
+                insertDailyPositions.addBindValue(isSerie);
                 if (!insertDailyPositions.exec()) {
                     QMessageBox::critical(this, tr("Database error"), insertDailyPositions.lastError().text());
                 }
             } else {
                 QMessageBox::critical(this, tr("Database error"), insertDailyPositions.lastError().text());
             }
+            delete yogaPoint;
         }
     }
 }
@@ -221,7 +234,7 @@ void PositionView::dateSelected(const QDate &date)
 {
     m_positionTable->clearContents();
     m_positionTable->setRowCount(0);
-    QSqlQuery selectDailyPositions("SELECT position_id, times FROM daily_positions WHERE days = ?");
+    QSqlQuery selectDailyPositions("SELECT position_id, times, is_serie FROM daily_positions WHERE days = ?");
     selectDailyPositions.addBindValue(date);
     if (!selectDailyPositions.exec()) {
       QMessageBox::critical(this, tr("Database error"), selectDailyPositions.lastError().text());
@@ -231,9 +244,15 @@ void PositionView::dateSelected(const QDate &date)
     while (selectDailyPositions.next()) {
         int positionId = selectDailyPositions.value(0).toInt();
         int times = selectDailyPositions.value(1).toInt();
+        bool isSerie = selectDailyPositions.value(2).toBool();
         m_positionTable->setRowCount(row + 1);
-        Position position = Position::positionFromDatabase(positionId, this);
-        QTableWidgetItem *positionNameItem = new QTableWidgetItem(position.name());
+        YogaPoint* yogaPoint = 0;
+        if (isSerie) {
+            yogaPoint = new Serie(Serie::serieFromDatabase(positionId, m_positions, this));
+        } else {
+            yogaPoint = new Position(Position::positionFromDatabase(positionId, this));
+        }
+        QTableWidgetItem *positionNameItem = new QTableWidgetItem(yogaPoint->name());
         m_positionTable->setItem(row, 0, positionNameItem);
 
         QTableWidgetItem *timesItem = new QTableWidgetItem(QString::number(times));
@@ -243,5 +262,6 @@ void PositionView::dateSelected(const QDate &date)
         m_positionTable->setItem(row, 3, trashIcon);
 
         row++;
+        delete yogaPoint;
     }
 }

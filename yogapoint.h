@@ -3,6 +3,11 @@
 
 #include <QString>
 #include <QWidget>
+#include "databasemanager.h"
+#include <QSqlQuery>
+#include <QSqlError>
+#include <QMessageBox>
+#include <QObject>
 
 class YogaPoint
 {
@@ -16,6 +21,7 @@ public:
     void setId(int id);
     void setPoint(int points);
     void setName(const QString &name);
+    static bool isSerie(const QString& positionName, QWidget *window);
 protected:
     QString m_name;
     unsigned int m_points;
