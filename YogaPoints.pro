@@ -21,7 +21,8 @@ SOURCES += main.cpp\
     serie.cpp \
     yogapoint.cpp \
     position.cpp \
-    databasemanager.cpp
+    databasemanager.cpp \
+    addpositionview.cpp
 
 HEADERS  += mainwindow.h \
     addpointsview.h \
@@ -29,7 +30,8 @@ HEADERS  += mainwindow.h \
     serie.h \
     yogapoint.h \
     position.h \
-    databasemanager.h
+    databasemanager.h \
+    addpositionview.h
 
 RESOURCES += \
     resources.qrc

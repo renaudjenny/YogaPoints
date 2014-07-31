@@ -101,16 +101,33 @@ MainWindow::MainWindow(QWidget *parent)
     m_positionView = new PositionView(this);
     setCentralWidget(m_positionView);
 
-    /* DEBUG
-    QSqlQuery query("SELECT id, name, position_id FROM series");
-    while (query.next()) {
-        qDebug() << "id: " << query.value(0).toInt() << ", name: " << query.value(1).toString() << ", position id: " << query.value(2).toInt();
-    }
-    */
+    createActions();
+    createMenus();
 }
 
 MainWindow::~MainWindow()
 {
     DatabaseManager db;
     db.deleteDB();
+}
+
+void MainWindow::createActions()
+{
+    addPositionAct = new QAction(tr("&Add a position"), this);
+    addPositionAct->setShortcut(QKeySequence::New);
+    addPositionAct->setToolTip(tr("Add a new position in the list"));
+    connect(addPositionAct, SIGNAL(triggered()), this, SLOT(openAddPositionView()));
+}
+
+void MainWindow::createMenus()
+{
+    editMenu = menuBar()->addMenu(tr("&Edit"));
+    editMenu->addAction(addPositionAct);
+}
+
+void MainWindow::openAddPositionView()
+{
+    //TODO Create an add position view
+    AddPositionView* addPositionView = new AddPositionView;
+    addPositionView->show();
 }
