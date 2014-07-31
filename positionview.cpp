@@ -9,12 +9,15 @@ PositionView::PositionView(QWidget *parent) :
     //Populate position list
     //find positions from database
     QSqlQuery selectPosition("SELECT id, name, point FROM positions");
+    //keep how many position are available
+    int positionCount = 0;
     while (selectPosition.next()) {
         int positionId = selectPosition.value(0).toInt();
         QString positionName = selectPosition.value(1).toString();
         int positionPoint = selectPosition.value(2).toInt();
         m_positionList[positionName] = positionPoint;
         m_positions.append(new Position(positionId, positionName, positionPoint));
+        positionCount++;
     }
 
     //find series from database
@@ -39,18 +42,20 @@ PositionView::PositionView(QWidget *parent) :
         }
         m_positions.append(new Serie(serieId, serieName, seriePositionList));
     }
-    /* DEBUG */
-    qDebug() << endl << endl;
-    for (YogaPoint* yogaPoint : m_positions) {
-        qDebug() << "Name: " << yogaPoint->name() << ", Points: " << yogaPoint->calculatePoints();
-    }
 
+    //Add or set Widgets
     QVBoxLayout *mainLayout = new QVBoxLayout;
     QLabel *title = new QLabel(tr("Position"));
 
     m_positionTable = new QTableWidget(0, 4);
     //Position (name), Times (number of position), Points (calculated value), Trash icon
     m_positionTable->setHorizontalHeaderLabels(QStringList(tr("Position")) << tr("Times") << tr("Points") << "");
+    //Set colum size to get all the window size
+    m_positionTable->setColumnWidth(3, 25);
+    int columnWidth = 370 - m_positionTable->columnWidth(3);
+    m_positionTable->setColumnWidth(0, columnWidth / 3);
+    m_positionTable->setColumnWidth(1, columnWidth / 3);
+    m_positionTable->setColumnWidth(2, columnWidth / 3);
     m_positionTable->verticalHeader()->setVisible(false);
     m_positionTable->setShowGrid(false);
 
@@ -68,12 +73,14 @@ PositionView::PositionView(QWidget *parent) :
 
     m_addPositionComboBox->setEditable(true);
     QStringList positionNames;
-    for (auto it = m_positions.begin(); it != m_positions.end(); it++) {
-        positionNames << (*it)->name();
+    for (YogaPoint* yogaPoint : m_positions) {
+        positionNames << yogaPoint->name();
     }
     m_addPositionComboBox->addItems(positionNames);
     m_addPositionComboBox->setInsertPolicy(QComboBox::NoInsert);
+    m_addPositionComboBox->insertSeparator(positionCount);
 
+    //Place Widgets
     //add addPosition widgets to layout
     addPositionWidget->setLayout(addPositionLayout);
     addPositionLayout->addWidget(m_addPositionComboBox);
@@ -91,7 +98,7 @@ PositionView::PositionView(QWidget *parent) :
     mainLayout->addWidget(m_validateButton);
     mainLayout->addWidget(m_calendar);
 
-
+    //Signal and slot connections
     //a signal mapper will be usefull for delete button of each position/serie
     m_signalMapper = new QSignalMapper(this);
 
