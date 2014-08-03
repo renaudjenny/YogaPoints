@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QtWidgets>
+#include "views/positionview.h"
 
 class AddPointsView : public QWidget
 {

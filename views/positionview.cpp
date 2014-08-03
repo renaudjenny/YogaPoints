@@ -1,7 +1,4 @@
 #include "positionview.h"
-#include "mainwindow.h"
-#include <QSqlQuery>
-#include <QSqlError>
 
 PositionView::PositionView(QWidget *parent) :
     QWidget(parent)
@@ -131,7 +128,7 @@ void PositionView::addPosition()
     QTableWidgetItem *timesItem = new QTableWidgetItem(QString::number(times));
     m_positionTable->setItem(row, 1, timesItem);
 
-    QTableWidgetItem *trashIcon = new QTableWidgetItem(QIcon(":/trash.svg"), "");
+    QTableWidgetItem *trashIcon = new QTableWidgetItem(QIcon(":/images/trash.svg"), "");
     m_positionTable->setItem(row, 3, trashIcon);
 }
 
@@ -265,7 +262,7 @@ void PositionView::dateSelected(const QDate &date)
         QTableWidgetItem *timesItem = new QTableWidgetItem(QString::number(times));
         m_positionTable->setItem(row, 1, timesItem);
 
-        QTableWidgetItem *trashIcon = new QTableWidgetItem(QIcon(":/trash.svg"), "");
+        QTableWidgetItem *trashIcon = new QTableWidgetItem(QIcon(":/images/trash.svg"), "");
         m_positionTable->setItem(row, 3, trashIcon);
 
         row++;

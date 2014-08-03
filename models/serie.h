@@ -1,8 +1,8 @@
 #ifndef SERIE_H
 #define SERIE_H
 
-#include "yogapoint.h"
-#include "position.h"
+#include "models/yogapoint.h"
+#include "models/position.h"
 #include <QList>
 #include <QSqlQuery>
 #include <QMessageBox>

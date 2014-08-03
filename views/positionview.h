@@ -3,8 +3,10 @@
 
 #include <QWidget>
 #include <QtWidgets>
-#include "position.h"
-#include "serie.h"
+#include <QSqlQuery>
+#include <QSqlError>
+#include "models/position.h"
+#include "models/serie.h"
 
 class PositionView : public QWidget
 {

@@ -1,5 +1,4 @@
 #include "mainwindow.h"
-#include "databasemanager.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)

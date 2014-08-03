@@ -15,26 +15,23 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
-    addpointsview.cpp \
-    positionview.cpp \
-    serie.cpp \
-    yogapoint.cpp \
-    position.cpp \
-    databasemanager.cpp \
-    addpositionview.cpp
+    views/mainwindow.cpp \
+    views/addpointsview.cpp \
+    views/positionview.cpp \
+    models/serie.cpp \
+    models/yogapoint.cpp \
+    models/position.cpp \
+    managers/databasemanager.cpp \
+    views/addpositionview.cpp
 
-HEADERS  += mainwindow.h \
-    addpointsview.h \
-    positionview.h \
-    serie.h \
-    yogapoint.h \
-    position.h \
-    databasemanager.h \
-    addpositionview.h
+HEADERS  += views/mainwindow.h \
+    views/addpointsview.h \
+    views/positionview.h \
+    models/serie.h \
+    models/yogapoint.h \
+    models/position.h \
+    managers/databasemanager.h \
+    views/addpositionview.h
 
 RESOURCES += \
     resources.qrc
-
-OTHER_FILES += \
-    positions.json

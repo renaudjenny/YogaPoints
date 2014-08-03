@@ -1,7 +1,7 @@
 #ifndef POSITION_H
 #define POSITION_H
 
-#include "yogapoint.h"
+#include "models/yogapoint.h"
 #include <QSqlQuery>
 #include <QMessageBox>
 #include <QVariant>

@@ -3,7 +3,7 @@
 
 #include <QString>
 #include <QWidget>
-#include "databasemanager.h"
+#include "managers/databasemanager.h"
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QMessageBox>

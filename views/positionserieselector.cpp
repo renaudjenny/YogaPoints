@@ -46,7 +46,7 @@ void PositionSerieSelector::initDefault()
     QHBoxLayout *mainLayout = new QHBoxLayout;
     m_comboBox = new QComboBox;
     m_counterSpinBox = new QSpinBox;
-    m_trashIcon = QIcon(":/trash.svg");
+    m_trashIcon = QIcon(":/images/trash.svg");
     m_trashButton = new QPushButton(m_trashIcon, "");
 
     setLayout(mainLayout);

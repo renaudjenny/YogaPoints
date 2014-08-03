@@ -1,5 +1,4 @@
 #include "addpointsview.h"
-#include "positionview.h"
 
 AddPointsView::AddPointsView(QWidget *parent) :
     QWidget(parent)

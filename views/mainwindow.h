@@ -3,9 +3,10 @@
 
 #include <QMainWindow>
 #include <QtWidgets>
-#include "addpointsview.h"
-#include "positionview.h"
-#include "addpositionview.h"
+#include "views/positionview.h"
+#include "views/addpointsview.h"
+#include "views/addpositionview.h"
+#include "managers/databasemanager.h"
 
 class MainWindow : public QMainWindow
 {

@@ -1,7 +1,7 @@
-<RCC>
-    <qresource prefix="/">
-        <file>trash.svg</file>
-        <file>positions.json</file>
-        <file>series.json</file>
-    </qresource>
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>images/trash.svg</file>
+    <file>positions.json</file>
+    <file>series.json</file>
+</qresource>
 </RCC>
