@@ -8,7 +8,7 @@ MainWindow::MainWindow(QWidget *parent)
         QSqlQuery createTableQuery;
 
         //first thing, we'll set position table on database
-        if (!createTableQuery.prepare("CREATE TABLE IF NOT EXISTS positions (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(100), point INT)")) {
+        if (!createTableQuery.prepare("CREATE TABLE IF NOT EXISTS positions (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(100) UNIQUE, point INT)")) {
             QMessageBox::critical(this, tr("Database error"), createTableQuery.lastError().text());
         }
         if (!createTableQuery.exec()) {
@@ -44,7 +44,7 @@ MainWindow::MainWindow(QWidget *parent)
         }
 
         //we'll set serie table on database
-        if (!createTableQuery.prepare("CREATE TABLE IF NOT EXISTS series (id INT, name VARCHAR(100), position_id INT)")) {
+        if (!createTableQuery.prepare("CREATE TABLE IF NOT EXISTS series (id INT, name VARCHAR(100) UNIQUE, position_id INT)")) {
             QMessageBox::critical(this, tr("Database error"), createTableQuery.lastError().text());
         }
         if (!createTableQuery.exec()) {
@@ -126,7 +126,6 @@ void MainWindow::createMenus()
 
 void MainWindow::openAddPositionView()
 {
-    //TODO Create an add position view
     AddPositionView* addPositionView = new AddPositionView;
-    addPositionView->show();
+    addPositionView->exec();
 }

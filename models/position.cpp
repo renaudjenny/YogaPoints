@@ -4,7 +4,7 @@ Position::Position()
 {
 }
 
-Position::Position(int id, const QString &name, unsigned int points) : YogaPoint(id, name, points)
+Position::Position(const QString &name, unsigned int points, int id) : YogaPoint(id, name, points)
 {
 }
 
@@ -15,6 +15,30 @@ Position::~Position()
 unsigned int Position::calculatePoints()
 {
     return m_points;
+}
+
+void Position::save(QWidget *window)
+{
+    //test if the serie name already exists
+    QSqlQuery query("SELECT COUNT(*) FROM positions WHERE name = ?");
+    query.addBindValue(m_name);
+    if (!query.exec()) {
+        QMessageBox::critical(window, QObject::tr("Database error"), query.lastError().text());
+    }
+    query.next();
+    int result = query.value(0).toInt();
+    if (result == 0) {
+        //Add a position
+        QSqlQuery insertQuery("INSERT INTO positions (name, point) VALUES (?, ?)");
+        insertQuery.addBindValue(m_name);
+        insertQuery.addBindValue(m_points);
+        if (!insertQuery.exec()) {
+            QMessageBox::critical(window, QObject::tr("Database error"), query.lastError().text());
+        }
+    } else {
+        //TODO Update the position
+        qDebug() << "Update " << m_name;
+    }
 }
 
 Position Position::positionFromDatabase(const QString &positionName, QWidget *window)

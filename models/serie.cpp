@@ -4,7 +4,7 @@ Serie::Serie()
 {
 }
 
-Serie::Serie(int id, const QString &name, QList<YogaPoint *> yogaPositions) : YogaPoint(id, name), m_positions(yogaPositions)
+Serie::Serie(const QString &name, QList<YogaPoint *> yogaPositions, int id) : YogaPoint(id, name), m_positions(yogaPositions)
 {
 }
 
@@ -87,4 +87,43 @@ Serie Serie::serieFromDatabase(int serieId, QList<YogaPoint *> availablePosition
     serie.setPositions(positions);
 
     return serie;
+}
+
+void Serie::save(QWidget *window)
+{
+    //test if the serie name already exists
+    QSqlQuery query("SELECT COUNT(*) FROM serie WHERE name = ?");
+    query.addBindValue(m_name);
+    if (!query.exec()) {
+        QMessageBox::critical(window, QObject::tr("Database error"), query.lastError().text());
+    }
+    query.next();
+    int result = query.value(0).toInt();
+    if (result == 0) {
+        //Add a serie
+        for (YogaPoint* position : m_positions) {
+            QSqlQuery insertQuery("INSERT INTO serie (name, id, position_id) VALUES (?, ?, ?)");
+            insertQuery.addBindValue(m_name);
+            insertQuery.addBindValue(nextAvailableSerieId(window));
+            insertQuery.addBindValue(position->id());
+            if (!insertQuery.exec()) {
+                QMessageBox::critical(window, QObject::tr("Database error"), query.lastError().text());
+            }
+        }
+    } else {
+        //TODO Update the serie
+        //the best way to do that for the serie is to delete and recreate the serie
+    }
+}
+
+int Serie::nextAvailableSerieId(QWidget *window)
+{
+    QSqlQuery query("SELECT MAX(id) FROM serie GROUP BY id");
+    if (!query.exec()) {
+        QMessageBox::critical(window, QObject::tr("Database error"), query.lastError().text());
+    }
+    query.next();
+    int result = query.value(0).toInt();
+    qDebug() << "Max id: " << result;
+    return result + 1;
 }

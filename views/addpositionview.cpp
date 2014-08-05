@@ -1,7 +1,7 @@
 #include "addpositionview.h"
 
 AddPositionView::AddPositionView(QWidget *parent) :
-    QWidget(parent)
+    QDialog(parent)
 {
     setWindowTitle(tr("Add position"));
 
@@ -21,6 +21,27 @@ AddPositionView::AddPositionView(QWidget *parent) :
 
     mainLayout->addWidget(m_addPositionButton);
 
-    //TODO Signal and slot connections
+    //Signal and slot connections
+    connect(m_addPositionButton, SIGNAL(clicked()), this, SLOT(validateNewPosition()));
+}
 
+void AddPositionView::validateNewPosition()
+{
+    if (!m_nameEdit->text().isEmpty() && m_pointSpinBox->value() > 0) {
+        Position position(m_nameEdit->text(), m_pointSpinBox->value());
+        position.save(this);
+        accept();
+        /*
+        QSqlQuery query("INSERT INTO positions (name, point) VALUES (?, ?)");
+        query.addBindValue(m_nameEdit->text());
+        query.addBindValue(m_pointSpinBox->value());
+        if (query.exec()) {
+            accept();
+        } else {
+            QMessageBox::critical(this, tr("Database error"), query.lastError().text());
+        }
+        */
+    } else {
+        QMessageBox::warning(this, tr("Non valid arguments"), tr("You have to set a name and points (greather than 0) to add a position"));
+    }
 }

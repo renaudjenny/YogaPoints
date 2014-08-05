@@ -13,7 +13,7 @@ class Serie : public YogaPoint
 {
 public:
     Serie();
-    Serie(int id, const QString &name, QList<YogaPoint*> yogaPositions);
+    Serie(const QString &name, QList<YogaPoint*> yogaPositions, int id = 0);
     ~Serie();
     unsigned int calculatePoints();
     QList<YogaPoint*> getPositions();
@@ -21,6 +21,8 @@ public:
 
     static Serie serieFromDatabase(const QString &serieName, QList<YogaPoint*> availablePositions, QWidget *window);
     static Serie serieFromDatabase(int serieId, QList<YogaPoint *> availablePositions, QWidget* window);
+    void save(QWidget* window);
+    static int nextAvailableSerieId(QWidget* window);
 private:
     QList<YogaPoint*> m_positions;
 };

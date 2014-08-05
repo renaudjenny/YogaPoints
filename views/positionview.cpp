@@ -13,7 +13,7 @@ PositionView::PositionView(QWidget *parent) :
         QString positionName = selectPosition.value(1).toString();
         int positionPoint = selectPosition.value(2).toInt();
         m_positionList[positionName] = positionPoint;
-        m_positions.append(new Position(positionId, positionName, positionPoint));
+        m_positions.append(new Position(positionName, positionPoint, positionId));
         positionCount++;
     }
 
@@ -37,7 +37,7 @@ PositionView::PositionView(QWidget *parent) :
                 }
             }
         }
-        m_positions.append(new Serie(serieId, serieName, seriePositionList));
+        m_positions.append(new Serie(serieName, seriePositionList, serieId));
     }
 
     //Add or set Widgets

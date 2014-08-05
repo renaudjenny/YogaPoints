@@ -2,14 +2,20 @@
 #define ADDPOSITIONVIEW_H
 
 #include <QWidget>
+#include <QDialog>
 #include <QLabel>
 #include <QLineEdit>
 #include <QSpinBox>
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QFormLayout>
+#include <QMessageBox>
+#include <QSqlQuery>
+#include <QSqlError>
+#include "models/position.h"
+#include "models/serie.h"
 
-class AddPositionView : public QWidget
+class AddPositionView : public QDialog
 {
     Q_OBJECT
 public:
@@ -21,7 +27,7 @@ private:
 signals:
 
 public slots:
-
+    void validateNewPosition();
 };
 
 #endif // ADDPOSITIONVIEW_H

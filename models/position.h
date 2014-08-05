@@ -11,9 +11,10 @@ class Position : public YogaPoint
 {
 public:
     Position();
-    Position(int id, const QString& name, unsigned int points);
+    Position(const QString& name, unsigned int points, int id = 0);
     ~Position();
     unsigned int calculatePoints();
+    void save(QWidget* window);
 
     static Position positionFromDatabase(const QString &positionName, QWidget *window);
     static Position positionFromDatabase(int positionId, QWidget* window);
