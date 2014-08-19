@@ -15,6 +15,7 @@ public:
     explicit PositionView(QWidget *parent = 0);
     ~PositionView();
     const QPushButton *getGoBackButton();
+    void updatePositions();
 private:
     QTableWidget *m_positionTable;
     QMap<QString, unsigned int> m_positionList;

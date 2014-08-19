@@ -3,7 +3,83 @@
 PositionView::PositionView(QWidget *parent) :
     QWidget(parent)
 {
+    //Add or set Widgets
+    QVBoxLayout *mainLayout = new QVBoxLayout;
+    QLabel *title = new QLabel(tr("Position"));
+
+    m_positionTable = new QTableWidget(0, 4);
+    //Position (name), Times (number of position), Points (calculated value), Trash icon
+    m_positionTable->setHorizontalHeaderLabels(QStringList(tr("Position")) << tr("Times") << tr("Points") << "");
+    //Set colum size to get all the window size
+    m_positionTable->setColumnWidth(3, 25);
+    int columnWidth = 370 - m_positionTable->columnWidth(3);
+    m_positionTable->setColumnWidth(0, columnWidth / 3);
+    m_positionTable->setColumnWidth(1, columnWidth / 3);
+    m_positionTable->setColumnWidth(2, columnWidth / 3);
+    m_positionTable->verticalHeader()->setVisible(false);
+    m_positionTable->setShowGrid(false);
+
+    //set an icon instead of "+"
+    QWidget *addPositionWidget = new QWidget;
+    QHBoxLayout *addPositionLayout = new QHBoxLayout;
+    QPushButton *addPositionButton = new QPushButton("+");
+    m_addPositionComboBox = new QComboBox;
+    m_addPositionSpinBox = new QSpinBox;
+    m_timesPointLabel = new QLabel(tr("x %1 points").arg(0));
+    m_pointLabel = new QLabel(tr("Points: %1").arg(0));
+    m_dateLabel = new QLabel(tr("For: %1").arg(QDate::currentDate().toString()));
+    m_validateButton = new QPushButton(tr("Validate daily positions"));
+    m_calendar = new QCalendarWidget;
+
+    m_addPositionComboBox->setEditable(true);
+    m_addPositionComboBox->setInsertPolicy(QComboBox::NoInsert);
+
+    //Place Widgets
+    //add addPosition widgets to layout
+    addPositionWidget->setLayout(addPositionLayout);
+    addPositionLayout->addWidget(m_addPositionComboBox);
+    addPositionLayout->addWidget(m_addPositionSpinBox);
+    addPositionLayout->addWidget(m_timesPointLabel);
+    addPositionLayout->addWidget(addPositionButton);
+
+    setLayout(mainLayout);
+    mainLayout->addWidget(title);
+    mainLayout->addWidget(m_positionTable);
+    mainLayout->addWidget(addPositionWidget);
+
+    mainLayout->addWidget(m_pointLabel);
+    mainLayout->addWidget(m_dateLabel);
+    mainLayout->addWidget(m_validateButton);
+    mainLayout->addWidget(m_calendar);
+
+    //Signal and slot connections
+    //a signal mapper will be usefull for delete button of each position/serie
+    m_signalMapper = new QSignalMapper(this);
+
+    connect(addPositionButton, SIGNAL(clicked()), this, SLOT(addPosition()));
+    connect(m_addPositionComboBox, SIGNAL(currentTextChanged(QString)), this, SLOT(positionChanged(QString)));
+    connect(m_positionTable, SIGNAL(cellClicked(int,int)), this, SLOT(positionTableCellClicked(int,int)));
+    connect(m_positionTable, SIGNAL(cellChanged(int,int)), this, SLOT(updatePoints(int, int)));
+    connect(m_validateButton, SIGNAL(clicked()), this, SLOT(validateDailyPositions()));
+    connect(m_calendar, SIGNAL(clicked(QDate)), this, SLOT(dateSelected(QDate)));
+
     //Populate position list
+    updatePositions();
+    positionChanged(m_positions.first()->name());
+}
+
+PositionView::~PositionView()
+{
+    std::for_each(m_positions.begin(), m_positions.end(), [](YogaPoint* position) { delete position; });
+}
+
+void PositionView::updatePositions()
+{
+    //clean-up
+    m_positionList.clear();
+    m_positions.clear();
+    m_addPositionComboBox->clear();
+
     //find positions from database
     QSqlQuery selectPosition("SELECT id, name, point FROM positions");
     //keep how many position are available
@@ -40,78 +116,12 @@ PositionView::PositionView(QWidget *parent) :
         m_positions.append(new Serie(serieName, seriePositionList, serieId));
     }
 
-    //Add or set Widgets
-    QVBoxLayout *mainLayout = new QVBoxLayout;
-    QLabel *title = new QLabel(tr("Position"));
-
-    m_positionTable = new QTableWidget(0, 4);
-    //Position (name), Times (number of position), Points (calculated value), Trash icon
-    m_positionTable->setHorizontalHeaderLabels(QStringList(tr("Position")) << tr("Times") << tr("Points") << "");
-    //Set colum size to get all the window size
-    m_positionTable->setColumnWidth(3, 25);
-    int columnWidth = 370 - m_positionTable->columnWidth(3);
-    m_positionTable->setColumnWidth(0, columnWidth / 3);
-    m_positionTable->setColumnWidth(1, columnWidth / 3);
-    m_positionTable->setColumnWidth(2, columnWidth / 3);
-    m_positionTable->verticalHeader()->setVisible(false);
-    m_positionTable->setShowGrid(false);
-
-    //set an icon instead of "+"
-    QWidget *addPositionWidget = new QWidget;
-    QHBoxLayout *addPositionLayout = new QHBoxLayout;
-    QPushButton *addPositionButton = new QPushButton("+");
-    m_addPositionComboBox = new QComboBox;
-    m_addPositionSpinBox = new QSpinBox;
-    m_timesPointLabel = new QLabel(tr("x %1 points").arg(0));
-    m_pointLabel = new QLabel(tr("Points: %1").arg(0));
-    m_dateLabel = new QLabel(tr("For: %1").arg(QDate::currentDate().toString()));
-    m_validateButton = new QPushButton(tr("Validate daily positions"));
-    m_calendar = new QCalendarWidget;
-
-    m_addPositionComboBox->setEditable(true);
     QStringList positionNames;
     for (YogaPoint* yogaPoint : m_positions) {
         positionNames << yogaPoint->name();
     }
     m_addPositionComboBox->addItems(positionNames);
-    m_addPositionComboBox->setInsertPolicy(QComboBox::NoInsert);
     m_addPositionComboBox->insertSeparator(positionCount);
-
-    //Place Widgets
-    //add addPosition widgets to layout
-    addPositionWidget->setLayout(addPositionLayout);
-    addPositionLayout->addWidget(m_addPositionComboBox);
-    addPositionLayout->addWidget(m_addPositionSpinBox);
-    addPositionLayout->addWidget(m_timesPointLabel);
-    addPositionLayout->addWidget(addPositionButton);
-
-    setLayout(mainLayout);
-    mainLayout->addWidget(title);
-    mainLayout->addWidget(m_positionTable);
-    mainLayout->addWidget(addPositionWidget);
-
-    mainLayout->addWidget(m_pointLabel);
-    mainLayout->addWidget(m_dateLabel);
-    mainLayout->addWidget(m_validateButton);
-    mainLayout->addWidget(m_calendar);
-
-    //Signal and slot connections
-    //a signal mapper will be usefull for delete button of each position/serie
-    m_signalMapper = new QSignalMapper(this);
-
-    connect(addPositionButton, SIGNAL(clicked()), this, SLOT(addPosition()));
-    connect(m_addPositionComboBox, SIGNAL(currentTextChanged(QString)), this, SLOT(positionChanged(QString)));
-    connect(m_positionTable, SIGNAL(cellClicked(int,int)), this, SLOT(positionTableCellClicked(int,int)));
-    connect(m_positionTable, SIGNAL(cellChanged(int,int)), this, SLOT(updatePoints(int, int)));
-    connect(m_validateButton, SIGNAL(clicked()), this, SLOT(validateDailyPositions()));
-    connect(m_calendar, SIGNAL(clicked(QDate)), this, SLOT(dateSelected(QDate)));
-
-    positionChanged(m_positions.first()->name());
-}
-
-PositionView::~PositionView()
-{
-    std::for_each(m_positions.begin(), m_positions.end(), [](YogaPoint* position) { delete position; });
 }
 
 void PositionView::addPosition()
@@ -232,6 +242,7 @@ void PositionView::validateDailyPositions()
             delete yogaPoint;
         }
     }
+    //TODO feedback needed
 }
 
 void PositionView::dateSelected(const QDate &date)

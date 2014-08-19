@@ -4,7 +4,6 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     DatabaseManager databaseManager;
-    //Move all code below in a method (static... or not) of the databaseManager
     databaseManager.createDatabaseSchema(this);
 
     m_positionView = new PositionView(this);
@@ -38,6 +37,6 @@ void MainWindow::openAddPositionView()
 {
     AddPositionView* addPositionView = new AddPositionView;
     if (addPositionView->exec() == QDialog::Accepted) {
-        //TODO emit a signal
+        m_positionView->updatePositions();
     }
 }
