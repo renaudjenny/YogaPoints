@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QtSql>
 #include <QFile>
+#include <QMessageBox>
 
 class DatabaseManager : public QObject
 {
@@ -13,9 +14,9 @@ public:
     bool openDB();
     bool deleteDB();
     QSqlError lastError();
-
+    void createDatabaseSchema(QWidget* window);
 private:
-        QSqlDatabase db;
+    QSqlDatabase db;
 
 signals:
 

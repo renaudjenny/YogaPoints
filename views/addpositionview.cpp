@@ -31,16 +31,6 @@ void AddPositionView::validateNewPosition()
         Position position(m_nameEdit->text(), m_pointSpinBox->value());
         position.save(this);
         accept();
-        /*
-        QSqlQuery query("INSERT INTO positions (name, point) VALUES (?, ?)");
-        query.addBindValue(m_nameEdit->text());
-        query.addBindValue(m_pointSpinBox->value());
-        if (query.exec()) {
-            accept();
-        } else {
-            QMessageBox::critical(this, tr("Database error"), query.lastError().text());
-        }
-        */
     } else {
         QMessageBox::warning(this, tr("Non valid arguments"), tr("You have to set a name and points (greather than 0) to add a position"));
     }
