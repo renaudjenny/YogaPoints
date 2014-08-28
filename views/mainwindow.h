@@ -5,7 +5,7 @@
 #include <QtWidgets>
 #include "views/positionview.h"
 #include "views/addpointsview.h"
-#include "views/addpositionview.h"
+#include "views/managepositionview.h"
 #include "managers/databasemanager.h"
 
 class MainWindow : public QMainWindow
@@ -17,13 +17,13 @@ public:
     ~MainWindow();
 private:
     QMenu* editMenu;
-    QAction* addPositionAct;
+    QAction* managePositionAct;
     PositionView *m_positionView;
     void createActions();
     void createMenus();
 signals:
 public slots:
-    void openAddPositionView();
+    void openManagePositionView();
 };
 
 #endif // MAINWINDOW_H

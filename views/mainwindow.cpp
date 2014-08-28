@@ -21,22 +21,22 @@ MainWindow::~MainWindow()
 
 void MainWindow::createActions()
 {
-    addPositionAct = new QAction(tr("&Add a position"), this);
-    addPositionAct->setShortcut(QKeySequence::New);
-    addPositionAct->setToolTip(tr("Add a new position in the list"));
-    connect(addPositionAct, SIGNAL(triggered()), this, SLOT(openAddPositionView()));
+    managePositionAct = new QAction(tr("&Manage positions"), this);
+    managePositionAct->setShortcut(QKeySequence::Print);
+    managePositionAct->setToolTip(tr("Manage positions, create new one, edit or delete"));
+    connect(managePositionAct, SIGNAL(triggered()), this, SLOT(openManagePositionView()));
 }
 
 void MainWindow::createMenus()
 {
     editMenu = menuBar()->addMenu(tr("&Edit"));
-    editMenu->addAction(addPositionAct);
+    editMenu->addAction(managePositionAct);
 }
 
-void MainWindow::openAddPositionView()
+void MainWindow::openManagePositionView()
 {
-    AddPositionView* addPositionView = new AddPositionView;
-    if (addPositionView->exec() == QDialog::Accepted) {
+    ManagePositionView* managePositionView = new ManagePositionView;
+    if (managePositionView->exec() == QDialog::Accepted) {
         m_positionView->updatePositions();
     }
 }

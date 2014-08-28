@@ -15,6 +15,7 @@ public:
     ~Position();
     unsigned int calculatePoints();
     void save(QWidget* window);
+    void deleteFromDB(QWidget* window);
 
     static Position positionFromDatabase(const QString &positionName, QWidget *window);
     static Position positionFromDatabase(int positionId, QWidget* window);

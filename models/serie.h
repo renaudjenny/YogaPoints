@@ -22,6 +22,7 @@ public:
     static Serie serieFromDatabase(const QString &serieName, QList<YogaPoint*> availablePositions, QWidget *window);
     static Serie serieFromDatabase(int serieId, QList<YogaPoint *> availablePositions, QWidget* window);
     void save(QWidget* window);
+    void deleteFromDB(QWidget* window);
     static int nextAvailableSerieId(QWidget* window);
 private:
     QList<YogaPoint*> m_positions;

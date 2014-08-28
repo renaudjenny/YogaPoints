@@ -23,6 +23,7 @@ public:
     void setName(const QString &name);
     static bool isSerie(const QString& positionName, QWidget *window);
     virtual void save(QWidget* window) = 0;
+    virtual void deleteFromDB(QWidget* window) = 0;
 protected:
     QString m_name;
     unsigned int m_points;

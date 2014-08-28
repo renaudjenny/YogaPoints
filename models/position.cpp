@@ -36,10 +36,26 @@ void Position::save(QWidget *window)
             QMessageBox::critical(window, QObject::tr("Database error"), query.lastError().text());
         }
     } else {
-        //TODO Update the position
-        qDebug() << "Update " << m_name;
+        QSqlQuery updateQuery("UPDATE positions SET name = ?, point = ? WHERE id = ?");
+        updateQuery.addBindValue(m_name);
+        updateQuery.addBindValue(m_points);
+        updateQuery.addBindValue(m_id);
+        if (!updateQuery.exec()) {
+            QMessageBox::critical(window, QObject::tr("Database error"), updateQuery.lastError().text());
+        }
     }
 }
+
+void Position::deleteFromDB(QWidget *window)
+{
+    QSqlQuery deleteQuery("DELETE FROM positions WHERE id = ?");
+    deleteQuery.addBindValue(m_id);
+    if (!deleteQuery.exec()) {
+        QMessageBox::critical(window, QObject::tr("Database error"), deleteQuery.lastError().text());
+    }
+}
+
+
 
 Position Position::positionFromDatabase(const QString &positionName, QWidget *window)
 {

@@ -1,4 +1,5 @@
 #include "positionview.h"
+#include <QHeaderView>
 
 PositionView::PositionView(QWidget *parent) :
     QWidget(parent)
@@ -10,12 +11,7 @@ PositionView::PositionView(QWidget *parent) :
     m_positionTable = new QTableWidget(0, 4);
     //Position (name), Times (number of position), Points (calculated value), Trash icon
     m_positionTable->setHorizontalHeaderLabels(QStringList(tr("Position")) << tr("Times") << tr("Points") << "");
-    //Set colum size to get all the window size
-    m_positionTable->setColumnWidth(3, 25);
-    int columnWidth = 370 - m_positionTable->columnWidth(3);
-    m_positionTable->setColumnWidth(0, columnWidth / 3);
-    m_positionTable->setColumnWidth(1, columnWidth / 3);
-    m_positionTable->setColumnWidth(2, columnWidth / 3);
+    m_positionTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     m_positionTable->verticalHeader()->setVisible(false);
     m_positionTable->setShowGrid(false);
 

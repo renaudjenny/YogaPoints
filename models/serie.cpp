@@ -116,6 +116,11 @@ void Serie::save(QWidget *window)
     }
 }
 
+void Serie::deleteFromDB(QWidget *window)
+{
+    //TODO
+}
+
 int Serie::nextAvailableSerieId(QWidget *window)
 {
     QSqlQuery query("SELECT MAX(id) FROM serie GROUP BY id");
