@@ -36,7 +36,7 @@ void MainWindow::createMenus()
 void MainWindow::openManagePositionView()
 {
     ManagePositionView* managePositionView = new ManagePositionView;
-    if (managePositionView->exec() == QDialog::Accepted) {
-        m_positionView->updatePositions();
-    }
+    managePositionView->exec();
+    m_positionView->updatePositions();
+    delete managePositionView;
 }

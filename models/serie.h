@@ -15,7 +15,7 @@ public:
     Serie();
     Serie(const QString &name, QList<YogaPoint*> yogaPositions, int id = 0);
     ~Serie();
-    unsigned int calculatePoints();
+    unsigned int calculatePoints() const;
     QList<YogaPoint*> getPositions();
     void setPositions(QList<YogaPoint*> positions);
 

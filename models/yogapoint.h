@@ -15,9 +15,9 @@ public:
     YogaPoint();
     YogaPoint(int id, const QString& name, unsigned int points = 0);
     virtual ~YogaPoint();
-    virtual unsigned int calculatePoints() = 0;
+    virtual unsigned int calculatePoints() const = 0;
     QString name() const;
-    int id();
+    int id() const;
     void setId(int id);
     void setPoint(int points);
     void setName(const QString &name);

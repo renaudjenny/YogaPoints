@@ -22,7 +22,8 @@ SOURCES += main.cpp\
     models/yogapoint.cpp \
     models/position.cpp \
     managers/databasemanager.cpp \
-    views/managepositionview.cpp
+    views/managepositionview.cpp \
+    views/addpositionview.cpp
 
 HEADERS  += views/mainwindow.h \
     views/addpointsview.h \
@@ -31,7 +32,8 @@ HEADERS  += views/mainwindow.h \
     models/yogapoint.h \
     models/position.h \
     managers/databasemanager.h \
-    views/managepositionview.h
+    views/managepositionview.h \
+    views/addpositionview.h
 
 RESOURCES += \
     resources.qrc

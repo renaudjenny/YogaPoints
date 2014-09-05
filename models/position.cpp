@@ -12,7 +12,7 @@ Position::~Position()
 {
 }
 
-unsigned int Position::calculatePoints()
+unsigned int Position::calculatePoints() const
 {
     return m_points;
 }

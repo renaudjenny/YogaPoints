@@ -1,5 +1,6 @@
 #include "managepositionview.h"
 #include <QHeaderView>
+#include "addpositionview.h"
 
 ManagePositionView::ManagePositionView(QWidget *parent) :
     QDialog(parent)
@@ -60,14 +61,19 @@ ManagePositionView::ManagePositionView(QWidget *parent) :
 
 ManagePositionView::~ManagePositionView()
 {
-    std::for_each(m_positions.begin(), m_positions.end(), [](Position* position) { delete position; });
+    //because m_originalPositions and m_newPositions shared some position pointers... we have to put them in the "remainingPositions" list
+    //which will help us deleting the remaining positions...
+    QSet<Position*> remainingPositions = m_newPositions.toSet() - m_originalPositions.toSet();
+    std::for_each(m_originalPositions.begin(), m_originalPositions.end(), [](Position* position) { delete position; });
+    std::for_each(remainingPositions.begin(), remainingPositions.end(), [](Position* position) { delete position; });
 }
 
 void ManagePositionView::populatePositionTable()
 {
     //reset
     m_positionTable->clearContents();
-    m_positions.clear();
+    m_originalPositions.clear();
+    m_newPositions.clear();
 
     QSqlQuery query = QSqlQuery("SELECT id, name, point FROM positions ORDER BY id");
     while (query.next()) {
@@ -75,51 +81,65 @@ void ManagePositionView::populatePositionTable()
         QString name = query.value(1).toString();
         int point = query.value(2).toInt();
         Position* position = new Position(name, point, id);
-        m_positions.append(position);
+        m_originalPositions.append(position);
+        m_newPositions.append(position);
     }
 
     //populate the table
-    //disconnect SIGNAL/SLOT to prevent firing cellChanged on table
-    disconnect(m_positionTable, SIGNAL(cellChanged(int,int)), this, SLOT(positionChanged(int, int)));
-    m_positionTable->setRowCount(m_positions.count());
-    for (int i = 0; i < m_positions.count(); i++) {
-        Position* position = m_positions[i];
-        QTableWidgetItem* positionId = new QTableWidgetItem(QString::number(position->id()));
-        m_positionTable->setItem(i, 0, positionId);
-        QTableWidgetItem* positionName = new QTableWidgetItem(position->name());
-        m_positionTable->setItem(i, 1, positionName);
-        QTableWidgetItem* positionPoint = new QTableWidgetItem(QString::number(position->calculatePoints()));
-        m_positionTable->setItem(i, 2, positionPoint);
+    m_positionTable->setRowCount(m_originalPositions.count());
+    for (int i = 0; i < m_originalPositions.count(); i++) {
+        Position* position = m_originalPositions[i];
+        setPositionOnTable(position, i);
     }
-    //job is done, reconnect SIGNAL/SLOT
-    connect(m_positionTable, SIGNAL(cellChanged(int,int)), this, SLOT(positionChanged(int, int)));
+}
+
+void ManagePositionView::setPositionOnTable(const Position* position, int row)
+{
+    QTableWidgetItem* positionId = new QTableWidgetItem(QString::number(position->id()));
+    m_positionTable->setItem(row, 0, positionId);
+    QTableWidgetItem* positionName = new QTableWidgetItem(position->name());
+    m_positionTable->setItem(row, 1, positionName);
+    QTableWidgetItem* positionPoint = new QTableWidgetItem(QString::number(position->calculatePoints()));
+    m_positionTable->setItem(row, 2, positionPoint);
 }
 
 void ManagePositionView::validate()
 {
-    for (Position* position : m_positions) {
+    for (Position* position : m_newPositions) {
         position->save(this);
     }
-    for (Position* positionToDelete : m_positionsToDelete) {
+
+    QSet<Position*> positionsToDelete = m_originalPositions.toSet() - m_newPositions.toSet();
+    for (Position* positionToDelete : positionsToDelete) {
         positionToDelete->deleteFromDB(this);
     }
     //display this sentence only if there is at least one position deleted
-    QString deletedPositionInformation = m_positionsToDelete.count() > 0 ? tr(" There are %n positions deleted", "", m_positionsToDelete.count()) : "";
-    QMessageBox::information(this, tr("Update position"), tr("Positions are successfuly updated in database.") + deletedPositionInformation);
+    QString deletedPositionInformation = positionsToDelete.count() > 0 ? tr(" There are %n positions deleted.", "", positionsToDelete.count()) : "";
+    //display this sentence only if there is at least one position added
+    int postionAddedCount = (m_newPositions.toSet() - m_originalPositions.toSet()).size();
+    QString addedPositionInformation = postionAddedCount > 0 ? tr(" There are %n positions added.", "", postionAddedCount) : "";
+    QMessageBox::information(this, tr("Update position"), tr("Positions are successfuly updated in database.") + deletedPositionInformation + addedPositionInformation);
 }
 
 void ManagePositionView::addNewPosition()
 {
-    m_positionTable->setRowCount(m_positionTable->rowCount() + 1);
-    m_validateButton->setEnabled(true);
+    AddPositionView* addPositionView = new AddPositionView(this);
+    addPositionView->setModal(true);
+    if (addPositionView->exec() == QDialog::Accepted) {
+        //TODO add position in the table
+        Position* position = new Position(addPositionView->positionName(), addPositionView->point());
+        m_newPositions.append(position);
+        m_positionTable->setRowCount(m_positionTable->rowCount() + 1);
+        setPositionOnTable(position, m_newPositions.count() - 1);
+        m_validateButton->setEnabled(true);
+    }
 }
 
 void ManagePositionView::deletePosition()
 {
     m_positionTable->removeRow(m_selectedPositionRow);
     //put position to remove on positionsToDelete list
-    m_positionsToDelete.append(m_positions[m_selectedPositionRow]);
-    m_positions.removeAt(m_selectedPositionRow);
+    m_newPositions.removeAt(m_selectedPositionRow);
     m_validateButton->setEnabled(true);
 }
 
@@ -131,16 +151,16 @@ void ManagePositionView::positionClicked(int row, int column)
 
 void ManagePositionView::positionChanged(int row, int column)
 {
-    m_validateButton->setEnabled(true);
-
     //put modification
     QTableWidgetItem* positionId = m_positionTable->item(row, 0);
     QTableWidgetItem* positionName = m_positionTable->item(row, 1);
     QTableWidgetItem* positionPoint = m_positionTable->item(row, 2);
-
-    if (m_positions[row]->id() == positionId->text().toInt()) {
-        m_positions[row]->setName(positionName->text());
-        m_positions[row]->setPoint(positionPoint->text().toInt());
+    if (positionId && positionName && positionPoint) {
+        m_validateButton->setEnabled(true);
+        if (m_newPositions.size() > row && m_newPositions[row]->id() == positionId->text().toInt()) {
+            m_newPositions[row]->setName(positionName->text());
+            m_newPositions[row]->setPoint(positionPoint->text().toInt());
+        }
     }
 }
 

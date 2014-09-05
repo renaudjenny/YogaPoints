@@ -17,7 +17,7 @@ QString YogaPoint::name() const
     return m_name;
 }
 
-int YogaPoint::id()
+int YogaPoint::id() const
 {
     return m_id;
 }

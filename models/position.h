@@ -13,7 +13,7 @@ public:
     Position();
     Position(const QString& name, unsigned int points, int id = 0);
     ~Position();
-    unsigned int calculatePoints();
+    unsigned int calculatePoints() const;
     void save(QWidget* window);
     void deleteFromDB(QWidget* window);
 

@@ -245,6 +245,7 @@ void PositionView::dateSelected(const QDate &date)
 {
     m_positionTable->clearContents();
     m_positionTable->setRowCount(0);
+    int sum = 0;
     QSqlQuery selectDailyPositions("SELECT position_id, times, is_serie FROM daily_positions WHERE days = ?");
     selectDailyPositions.addBindValue(date);
     if (!selectDailyPositions.exec()) {
@@ -272,7 +273,10 @@ void PositionView::dateSelected(const QDate &date)
         QTableWidgetItem *trashIcon = new QTableWidgetItem(QIcon(":/images/trash.svg"), "");
         m_positionTable->setItem(row, 3, trashIcon);
 
+        sum += yogaPoint->calculatePoints() * times;
+
         row++;
         delete yogaPoint;
     }
+    m_pointLabel->setText(tr("Points: %1").arg(sum));
 }

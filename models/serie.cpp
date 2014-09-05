@@ -12,7 +12,7 @@ Serie::~Serie()
 {
 }
 
-unsigned int Serie::calculatePoints()
+unsigned int Serie::calculatePoints() const
 {
     unsigned int sum = 0;
     for (auto it = m_positions.begin(); it != m_positions.end(); it++) {
