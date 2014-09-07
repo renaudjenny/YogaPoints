@@ -31,11 +31,11 @@ private:
     QPushButton* m_addNewPositionButton;
     QPushButton* m_deletePositionButton;
 
-    QList<Position*> m_originalPositions;
-    QList<Position*> m_newPositions;
+    QList<Position> m_originalPositions;
+    QList<Position> m_newPositions;
 
     void populatePositionTable();
-    void setPositionOnTable(const Position* position, int row);
+    void setPositionOnTable(const Position& position, int row);
 signals:
 
 public slots:

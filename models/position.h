@@ -19,6 +19,9 @@ public:
 
     static Position positionFromDatabase(const QString &positionName, QWidget *window);
     static Position positionFromDatabase(int positionId, QWidget* window);
+
+    friend bool operator==(const Position& lhs, const Position& rhs);
+    friend bool operator<(const Position& lhs, const Position& rhs);
 };
 
 #endif // POSITION_H

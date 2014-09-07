@@ -96,3 +96,14 @@ Position Position::positionFromDatabase(int positionId, QWidget *window)
 
     return position;
 }
+
+bool operator==(const Position &lhs, const Position &rhs)
+{
+    return lhs.name() == rhs.name();
+}
+
+bool operator<(const Position &lhs, const Position &rhs)
+{
+    return lhs.id() < rhs.id();
+}
+
