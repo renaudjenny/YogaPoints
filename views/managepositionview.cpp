@@ -128,7 +128,6 @@ void ManagePositionView::addNewPosition()
     AddPositionView* addPositionView = new AddPositionView(this);
     addPositionView->setModal(true);
     if (addPositionView->exec() == QDialog::Accepted) {
-        //TODO add position in the table
         Position position(addPositionView->positionName(), addPositionView->point());
         m_newPositions.append(position);
         m_positionTable->setRowCount(m_positionTable->rowCount() + 1);

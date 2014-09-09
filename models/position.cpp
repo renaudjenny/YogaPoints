@@ -2,6 +2,7 @@
 
 Position::Position()
 {
+    m_id = 0;
 }
 
 Position::Position(const QString &name, unsigned int points, int id) : YogaPoint(id, name, points)

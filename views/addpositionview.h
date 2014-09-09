@@ -13,12 +13,14 @@ public:
     QString positionName() const;
     int point();
 private:
+    QPushButton* m_okButton;
     QLineEdit* m_positionNameEdit;
     QSpinBox* m_pointSpinBox;
 signals:
 
 public slots:
-
+    void validateNewPosition();
+    void checkValidity();
 };
 
 #endif // ADDPOSITIONVIEW_H
