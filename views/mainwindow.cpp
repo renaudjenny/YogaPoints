@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "manageserieview.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -21,16 +22,20 @@ MainWindow::~MainWindow()
 
 void MainWindow::createActions()
 {
-    managePositionAct = new QAction(tr("&Manage positions"), this);
-    managePositionAct->setShortcut(QKeySequence::Print);
-    managePositionAct->setToolTip(tr("Manage positions, create new one, edit or delete"));
-    connect(managePositionAct, SIGNAL(triggered()), this, SLOT(openManagePositionView()));
+    m_managePositionAct = new QAction(tr("&Manage positions"), this);
+    m_managePositionAct->setToolTip(tr("Manage positions, create new one, edit or delete"));
+    connect(m_managePositionAct, SIGNAL(triggered()), this, SLOT(openManagePositionView()));
+
+    m_manageSerieAct = new QAction(tr("&Manage series"), this);
+    m_manageSerieAct->setToolTip(tr("Manage series, create new one, edit or delete"));
+    connect(m_manageSerieAct, SIGNAL(triggered()), this, SLOT(openManageSerieView()));
 }
 
 void MainWindow::createMenus()
 {
-    editMenu = menuBar()->addMenu(tr("&Edit"));
-    editMenu->addAction(managePositionAct);
+    m_editMenu = menuBar()->addMenu(tr("&Edit"));
+    m_editMenu->addAction(m_managePositionAct);
+    m_editMenu->addAction(m_manageSerieAct);
 }
 
 void MainWindow::openManagePositionView()
@@ -39,4 +44,12 @@ void MainWindow::openManagePositionView()
     managePositionView->exec();
     m_positionView->updatePositions();
     delete managePositionView;
+}
+
+void MainWindow::openManageSerieView()
+{
+    ManageSerieView* manageSerieView = new ManageSerieView;
+    manageSerieView->exec();
+    m_positionView->updatePositions();
+    delete manageSerieView;
 }

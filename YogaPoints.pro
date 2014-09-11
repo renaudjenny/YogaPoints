@@ -23,7 +23,8 @@ SOURCES += main.cpp\
     models/position.cpp \
     managers/databasemanager.cpp \
     views/managepositionview.cpp \
-    views/addpositionview.cpp
+    views/addpositionview.cpp \
+    views/manageserieview.cpp
 
 HEADERS  += views/mainwindow.h \
     views/addpointsview.h \
@@ -33,7 +34,8 @@ HEADERS  += views/mainwindow.h \
     models/position.h \
     managers/databasemanager.h \
     views/managepositionview.h \
-    views/addpositionview.h
+    views/addpositionview.h \
+    views/manageserieview.h
 
 RESOURCES += \
     resources.qrc

@@ -6,7 +6,7 @@
 ManagePositionView::ManagePositionView(QWidget *parent) :
     QDialog(parent)
 {
-    setWindowTitle(tr("Manage positions and series"));
+    setWindowTitle(tr("Manage positions"));
 
     //Create widgets
     m_positionTable = new QTableWidget;

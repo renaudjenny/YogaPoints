@@ -16,14 +16,16 @@ public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
 private:
-    QMenu* editMenu;
-    QAction* managePositionAct;
+    QMenu* m_editMenu;
+    QAction* m_managePositionAct;
+    QAction* m_manageSerieAct;
     PositionView *m_positionView;
     void createActions();
     void createMenus();
 signals:
 public slots:
     void openManagePositionView();
+    void openManageSerieView();
 };
 
 #endif // MAINWINDOW_H
