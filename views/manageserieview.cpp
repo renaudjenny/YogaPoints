@@ -1,6 +1,7 @@
 #include "manageserieview.h"
 #include <QBoxLayout>
 #include <QLabel>
+#include <QSql>
 
 ManageSerieView::ManageSerieView(QWidget *parent) :
     QDialog(parent)
@@ -43,4 +44,32 @@ ManageSerieView::ManageSerieView(QWidget *parent) :
     buttonsLayout->addWidget(m_cancelButton, 0, Qt::AlignRight);
     buttonsLayout->addWidget(m_validateButton, 0, Qt::AlignRight);
     mainLayout->addLayout(buttonsLayout);
+
+    connect(m_closeButton, SIGNAL(clicked()), this, SLOT(close()));
+    connect(m_serieComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(serieSelected(int)));
+
+    populateSerieComboBox();
+}
+
+void ManageSerieView::populateSerieComboBox()
+{
+    QSqlQuery query("SELECT name FROM series GROUP BY name");
+    while (query.next()) {
+        m_serieComboBox->addItem(query.value(0).toString());
+    }
+}
+
+void ManageSerieView::populatePositionTable(const Serie& serie)
+{
+    //TODO
+}
+
+void ManageSerieView::setPositionOnTable(const Position &position, int row)
+{
+    //TODO
+}
+
+void ManageSerieView::serieSelected(int index)
+{
+    QString serieName = m_serieComboBox->itemText(index);
 }

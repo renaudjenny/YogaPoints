@@ -40,16 +40,14 @@ void MainWindow::createMenus()
 
 void MainWindow::openManagePositionView()
 {
-    ManagePositionView* managePositionView = new ManagePositionView;
+    QScopedPointer<ManagePositionView> managePositionView(new ManagePositionView);
     managePositionView->exec();
     m_positionView->updatePositions();
-    delete managePositionView;
 }
 
 void MainWindow::openManageSerieView()
 {
-    ManageSerieView* manageSerieView = new ManageSerieView;
+    QScopedPointer<ManageSerieView> manageSerieView(new ManageSerieView);
     manageSerieView->exec();
     m_positionView->updatePositions();
-    delete manageSerieView;
 }

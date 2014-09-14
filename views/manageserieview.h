@@ -6,6 +6,8 @@
 #include <QComboBox>
 #include <QTableWidget>
 #include <QPushButton>
+#include "models/serie.h"
+#include "models/position.h"
 
 class ManageSerieView : public QDialog
 {
@@ -21,10 +23,14 @@ private:
     QPushButton* m_validateButton;
     QPushButton* m_cancelButton;
     QPushButton* m_closeButton;
+
+    void populateSerieComboBox();
+    void populatePositionTable(const Serie &serie);
+    void setPositionOnTable(const Position& position, int row);
 signals:
 
 public slots:
-
+    void serieSelected(int index);
 };
 
 #endif // MANAGESERIEVIEW_H
