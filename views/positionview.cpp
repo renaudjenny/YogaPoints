@@ -61,12 +61,13 @@ PositionView::PositionView(QWidget *parent) :
 
     //Populate position list
     updatePositions();
-    positionChanged(m_positions.first()->name());
+    if (m_positions.size() > 0) {
+        positionChanged(QString::fromStdString(m_positions.front()->name()));
+    }
 }
 
 PositionView::~PositionView()
 {
-    std::for_each(m_positions.begin(), m_positions.end(), [](YogaPoint* position) { delete position; });
 }
 
 void PositionView::updatePositions()
@@ -77,7 +78,7 @@ void PositionView::updatePositions()
     m_addPositionComboBox->clear();
 
     //find positions from database
-    QSqlQuery selectPosition("SELECT id, name, point FROM positions");
+    QSqlQuery selectPosition("SELECT id, name, point FROM yoga_point WHERE is_serie IS NOT 1");
     //keep how many position are available
     int positionCount = 0;
     while (selectPosition.next()) {
@@ -85,17 +86,17 @@ void PositionView::updatePositions()
         QString positionName = selectPosition.value(1).toString();
         int positionPoint = selectPosition.value(2).toInt();
         m_positionList[positionName] = positionPoint;
-        m_positions.append(new Position(positionName, positionPoint, positionId));
+        m_positions.push_back(std::shared_ptr<YogaPoint>(new Position(positionName.toStdString(), positionPoint, positionId)));
         positionCount++;
     }
 
     //find series from database
-    QSqlQuery selectSerie("SELECT id, name FROM series GROUP BY id");
+    QSqlQuery selectSerie("SELECT id, name, point FROM yoga_point WHERE is_serie = 1");
     while (selectSerie.next()) {
         int serieId = selectSerie.value(0).toInt();
         QString serieName = selectSerie.value(1).toString();
-        QList<YogaPoint*> seriePositionList;
-        QSqlQuery selectSeriePosition("SELECT position_id FROM series WHERE id = ?");
+        std::vector<std::shared_ptr<YogaPoint>> yogaPoints;
+        QSqlQuery selectSeriePosition("SELECT yoga_point_id FROM series WHERE id = ?");
         selectSeriePosition.addBindValue(serieId);
         if (!selectSeriePosition.exec()) {
             QMessageBox::critical(this, tr("Database error"), selectSeriePosition.lastError().text());
@@ -103,18 +104,18 @@ void PositionView::updatePositions()
         while (selectSeriePosition.next()) {
             //use position pointer from m_positions
             int positionId = selectSeriePosition.value(0).toInt();
-            for (YogaPoint* position : m_positions) {
+            for (std::shared_ptr<YogaPoint> position : m_positions) {
                 if (position->id() == positionId) {
-                    seriePositionList.append(position);
+                    yogaPoints.push_back(position);
                 }
             }
         }
-        m_positions.append(new Serie(serieName, seriePositionList, serieId));
+        m_positions.push_back(std::shared_ptr<YogaPoint>(new Serie(serieName.toStdString(), yogaPoints, serieId)));
     }
 
     QStringList positionNames;
-    for (YogaPoint* yogaPoint : m_positions) {
-        positionNames << yogaPoint->name();
+    for (std::shared_ptr<YogaPoint> yogaPoint : m_positions) {
+        positionNames << QString::fromStdString(yogaPoint->name());
     }
     m_addPositionComboBox->addItems(positionNames);
     m_addPositionComboBox->insertSeparator(positionCount);
@@ -141,7 +142,7 @@ void PositionView::addPosition()
 void PositionView::positionChanged(const QString &text)
 {
     for (auto it = m_positions.begin(); it != m_positions.end(); it++) {
-        if ((*it)->name() == text) {
+        if ((*it)->name() == text.toStdString()) {
             m_timesPointLabel->setText(tr("x %1 points").arg((*it)->calculatePoints()));
         }
     }
@@ -182,9 +183,9 @@ void PositionView::updatePoints(int row, int column)
             QString positionName = m_positionTable->item(i, 0)->text();
             QString times = m_positionTable->item(i, 1)->text();
             int points = 0;
-            for (auto it = m_positions.begin(); it != m_positions.end(); it++) {
-                if ((*it)->name() == positionName) {
-                    points = (*it)->calculatePoints() * times.toInt();
+            for (std::shared_ptr<YogaPoint> position : m_positions) {
+                if (QString::fromStdString(position->name()) == positionName) {
+                    points = position->calculatePoints() * times.toInt();
                 }
             }
             QTableWidgetItem *pointsItem = new QTableWidgetItem(QString::number(points));
@@ -213,29 +214,32 @@ void PositionView::validateDailyPositions()
         QTableWidgetItem *positionNameItem = m_positionTable->item(i, 0);
         QTableWidgetItem *timesItem = m_positionTable->item(i, 1);
         if (positionNameItem && timesItem) {
-            QString positionName = m_positionTable->item(i, 0)->text();
+            std::string positionName = m_positionTable->item(i, 0)->text().toStdString();
 
-            bool isSerie = YogaPoint::isSerie(positionName, this);
-            YogaPoint *yogaPoint = 0;
-            if (isSerie) {
-                yogaPoint = new Serie(Serie::serieFromDatabase(positionName, m_positions, this));
-            } else {
-                yogaPoint = new Position(Position::positionFromDatabase(positionName, this));
-            }
-            QString times = m_positionTable->item(i, 1)->text();
-            QSqlQuery insertDailyPositions;
-            if (insertDailyPositions.prepare("INSERT INTO daily_positions VALUES (?, ?, ?, ?)")) {
-                insertDailyPositions.addBindValue(selectedDay);
-                insertDailyPositions.addBindValue(yogaPoint->id());
-                insertDailyPositions.addBindValue(times);
-                insertDailyPositions.addBindValue(isSerie);
-                if (!insertDailyPositions.exec()) {
-                    QMessageBox::critical(this, tr("Database error"), insertDailyPositions.lastError().text());
+            try {
+                bool isSerie = YogaPoint::isSerie(positionName);
+                std::unique_ptr<YogaPoint> yogaPoint = 0;
+                if (isSerie) {
+                    yogaPoint = std::unique_ptr<YogaPoint>(new Serie(positionName, m_positions));
+                } else {
+                    yogaPoint = std::unique_ptr<YogaPoint>(new Position(Position::positionFromDatabase(positionName)));
                 }
-            } else {
-                QMessageBox::critical(this, tr("Database error"), insertDailyPositions.lastError().text());
+                QString times = m_positionTable->item(i, 1)->text();
+                QSqlQuery insertDailyPositions;
+                if (insertDailyPositions.prepare("INSERT INTO daily_positions VALUES (?, ?, ?, ?)")) {
+                    insertDailyPositions.addBindValue(selectedDay);
+                    insertDailyPositions.addBindValue(yogaPoint->id());
+                    insertDailyPositions.addBindValue(times);
+                    insertDailyPositions.addBindValue(isSerie);
+                    if (!insertDailyPositions.exec()) {
+                        throw std::runtime_error(insertDailyPositions.lastError().text().toStdString());
+                    }
+                } else {
+                    throw std::runtime_error(insertDailyPositions.lastError().text().toStdString());
+                }
+            } catch (std::exception e) {
+                QMessageBox::critical(this, tr("Error"), e.what());
             }
-            delete yogaPoint;
         }
     }
     //TODO feedback needed
@@ -258,13 +262,13 @@ void PositionView::dateSelected(const QDate &date)
         int times = selectDailyPositions.value(1).toInt();
         bool isSerie = selectDailyPositions.value(2).toBool();
         m_positionTable->setRowCount(row + 1);
-        YogaPoint* yogaPoint = 0;
+        std::unique_ptr<YogaPoint> yogaPoint = 0;
         if (isSerie) {
-            yogaPoint = new Serie(Serie::serieFromDatabase(positionId, m_positions, this));
+            yogaPoint = std::unique_ptr<YogaPoint>(new Serie(Serie::serieFromDatabase(positionId, m_positions)));
         } else {
-            yogaPoint = new Position(Position::positionFromDatabase(positionId, this));
+            yogaPoint = std::unique_ptr<YogaPoint>(new Position(Position::positionFromDatabase(positionId)));
         }
-        QTableWidgetItem *positionNameItem = new QTableWidgetItem(yogaPoint->name());
+        QTableWidgetItem *positionNameItem = new QTableWidgetItem(QString::fromStdString(yogaPoint->name()));
         m_positionTable->setItem(row, 0, positionNameItem);
 
         QTableWidgetItem *timesItem = new QTableWidgetItem(QString::number(times));
@@ -276,7 +280,6 @@ void PositionView::dateSelected(const QDate &date)
         sum += yogaPoint->calculatePoints() * times;
 
         row++;
-        delete yogaPoint;
     }
     m_pointLabel->setText(tr("Points: %1").arg(sum));
 }

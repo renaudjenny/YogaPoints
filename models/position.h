@@ -2,23 +2,19 @@
 #define POSITION_H
 
 #include "models/yogapoint.h"
-#include <QSqlQuery>
-#include <QMessageBox>
-#include <QVariant>
-#include <QSqlError>
 
 class Position : public YogaPoint
 {
 public:
     Position();
-    Position(const QString& name, unsigned int points, int id = 0);
+    Position(const std::string& name, unsigned int points, int id = 0);
     ~Position();
     unsigned int calculatePoints() const;
-    void save(QWidget* window);
-    void deleteFromDB(QWidget* window);
+    void save();
+    void deleteFromDB();
 
-    static Position positionFromDatabase(const QString &positionName, QWidget *window);
-    static Position positionFromDatabase(int positionId, QWidget* window);
+    static Position positionFromDatabase(const std::string &positionName);
+    static Position positionFromDatabase(int positionId);
 
     friend bool operator==(const Position& lhs, const Position& rhs);
     friend bool operator<(const Position& lhs, const Position& rhs);

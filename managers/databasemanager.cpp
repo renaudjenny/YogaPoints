@@ -1,5 +1,8 @@
 #include "databasemanager.h"
 #include "models/position.h"
+#include "models/serie.h"
+
+using namespace std;
 
 DatabaseManager::DatabaseManager(QObject *parent) :
     QObject(parent)
@@ -24,25 +27,34 @@ QSqlError DatabaseManager::lastError()
     return db.lastError();
 }
 
-void DatabaseManager::createDatabaseSchema(QWidget *window)
+void DatabaseManager::createDatabaseSchema()
 {
     if (openDB()) {
         QSqlQuery createTableQuery;
 
-        //first thing, we'll set position table on database
-        if (!createTableQuery.prepare("CREATE TABLE IF NOT EXISTS positions (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(100) UNIQUE, point INT)")) {
-            QMessageBox::critical(window, tr("Database error"), createTableQuery.lastError().text());
+        //first thing, we'll set yoga_point table on database
+        if (!createTableQuery.prepare("CREATE TABLE IF NOT EXISTS yoga_point (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(100) UNIQUE, point INT, is_serie TINYINT)")) {
+            throw runtime_error(createTableQuery.lastError().text().toStdString());
         }
         if (!createTableQuery.exec()) {
-            QMessageBox::critical(window, tr("Database error"), createTableQuery.lastError().text());
+            throw runtime_error(createTableQuery.lastError().text().toStdString());
+        }
+        //and series table
+        if (!createTableQuery.prepare("CREATE TABLE IF NOT EXISTS series (id INT, yoga_point_id INT)")) {
+            throw runtime_error(createTableQuery.lastError().text().toStdString());
+        }
+        if (!createTableQuery.exec()) {
+            throw runtime_error(createTableQuery.lastError().text().toStdString());
         }
 
-        //we read position from JSON file and copy them in Database if positions is empty
-        QSqlQuery selectCountPositions("SELECT COUNT(*) FROM positions");
-        selectCountPositions.next();
-        int positionCount = selectCountPositions.value(0).toInt();
+        vector<shared_ptr<YogaPoint>> yogaPoints;
 
-        if (positionCount == 0)
+        //we read position from JSON file and copy them in Database if positions is empty
+        QSqlQuery selectCountYogaPoint("SELECT COUNT(*) FROM yoga_point");
+        selectCountYogaPoint.next();
+        int yogaPointCount = selectCountYogaPoint.value(0).toInt();
+
+        if (yogaPointCount == 0)
         {
             QFile positionJsonFile(":/positions.json");
             if (positionJsonFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -51,71 +63,48 @@ void DatabaseManager::createDatabaseSchema(QWidget *window)
                 QJsonDocument positionJson = QJsonDocument::fromJson(jsonString.toUtf8());
                 QJsonObject positions = positionJson.object();
                 for (QJsonObject::iterator it = positions.begin(); it != positions.end(); it++) {
-                    QString positionName = it.key();
+                    string positionName = it.key().toStdString();
                     int positionPoint = it.value().toInt();
-                    QSqlQuery insertPositionQuery;
-                    insertPositionQuery.prepare("INSERT INTO positions (name, point) VALUES (:name, :point)");
-                    insertPositionQuery.bindValue(":name", positionName);
-                    insertPositionQuery.bindValue(":point", positionPoint);
-                    insertPositionQuery.exec();
+                    shared_ptr<YogaPoint> position(new Position(positionName, positionPoint));
+                    yogaPoints.push_back(position);
+                    position->save();
                 }
             } else {
-                QMessageBox::warning(window, tr("Error while reading JSON position file"),
-                    tr("Couldn't open JSON position file"));
+                throw runtime_error("Error while reading JSON position file");
             }
-        }
-
-        //we'll set serie table on database
-        if (!createTableQuery.prepare("CREATE TABLE IF NOT EXISTS series (id INT, name VARCHAR(100) UNIQUE, position_id INT)")) {
-            QMessageBox::critical(window, tr("Database error"), createTableQuery.lastError().text());
-        }
-        if (!createTableQuery.exec()) {
-            QMessageBox::critical(window, tr("Database error"), createTableQuery.lastError().text());
-        }
-
-        //we read position from JSON file and copy them in Database if positions is empty
-        QSqlQuery selectCountSeries("SELECT COUNT(*) FROM series");
-        selectCountSeries.next();
-        int serieCount = selectCountSeries.value(0).toInt();
-
-        if (serieCount == 0)
-        {
             QFile serieJsonFile(":/series.json");
             if (serieJsonFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
                 QString jsonString = serieJsonFile.readAll();
                 serieJsonFile.close();
                 QJsonDocument serieJson = QJsonDocument::fromJson(jsonString.toUtf8());
                 QJsonObject series = serieJson.object();
-                int i = 0;
                 for (QJsonObject::iterator it = series.begin(); it != series.end(); it++) {
-                    QString serieName = it.key();
-                    QJsonArray seriePositionNames = it.value().toArray();
-                    for (QJsonArray::iterator iit = seriePositionNames.begin(); iit != seriePositionNames.end(); iit++) {
-                        Position position = Position::positionFromDatabase((*iit).toString(), window);
-                        QSqlQuery insertSerieQuery;
-                        insertSerieQuery.prepare("INSERT INTO series (id, name, position_id) VALUES (?, ?, ?)");
-                        insertSerieQuery.addBindValue(i);
-                        insertSerieQuery.addBindValue(serieName);
-                        insertSerieQuery.addBindValue(position.id());
-                        insertSerieQuery.exec();
+                    string serieName = it.key().toStdString();
+                    shared_ptr<YogaPoint> serie(new Serie(serieName, yogaPoints));
+                    yogaPoints.push_back(serie);
+                    QJsonArray serieYogaPointNames = it.value().toArray();
+                    for (QJsonArray::iterator iit = serieYogaPointNames.begin(); iit != serieYogaPointNames.end(); iit++) {
+                        //find Yoga Point matching the name
+                        string yogaPointName = (*iit).toString().toStdString();
+                        auto yogaPointIt = find_if(yogaPoints.begin(), yogaPoints.end(), [&yogaPointName](shared_ptr<YogaPoint> yogaPoint) { return yogaPointName == yogaPoint->name(); });
+                        if (yogaPointIt != yogaPoints.end()) {
+                            dynamic_pointer_cast<Serie>(serie)->addYogaPoint(*yogaPointIt);
+                        }
                     }
-                    i++;
+                    serie->save();
                 }
-            } else {
-                QMessageBox::warning(window, tr("Error while reading JSON position file"),
-                    tr("Couldn't open JSON position file"));
             }
         }
 
         //now we create a table recording daily positions
         QSqlQuery CreateTableDailyPositionsQuery;
         if (!CreateTableDailyPositionsQuery.prepare("CREATE TABLE IF NOT EXISTS daily_positions (days DATE, position_id INT, times TINYINT, is_serie BOOLEAN DEFAULT 0 NOT NULL)")) {
-            QMessageBox::critical(window, tr("Database error"), CreateTableDailyPositionsQuery.lastError().text());
+            throw runtime_error(CreateTableDailyPositionsQuery.lastError().text().toStdString());
         }
         if (!CreateTableDailyPositionsQuery.exec()) {
-            QMessageBox::critical(window, tr("Database error"), CreateTableDailyPositionsQuery.lastError().text());
+            throw runtime_error(CreateTableDailyPositionsQuery.lastError().text().toStdString());
         }
     } else {
-        QMessageBox::critical(window, tr("Database issue"), tr("Problem occured with database connection"));
+        throw runtime_error("Problem occured with database connection");
     }
 }

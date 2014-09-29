@@ -1,11 +1,16 @@
 #include "mainwindow.h"
 #include "manageserieview.h"
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     DatabaseManager databaseManager;
-    databaseManager.createDatabaseSchema(this);
+    try {
+        databaseManager.createDatabaseSchema();
+    } catch (std::exception e) {
+        QMessageBox::critical(this, tr("Database error"), e.what());
+    }
 
     m_positionView = new PositionView(this);
     setCentralWidget(m_positionView);
@@ -40,14 +45,14 @@ void MainWindow::createMenus()
 
 void MainWindow::openManagePositionView()
 {
-    QScopedPointer<ManagePositionView> managePositionView(new ManagePositionView);
+    ManagePositionView* managePositionView = new ManagePositionView(this);
     managePositionView->exec();
     m_positionView->updatePositions();
 }
 
 void MainWindow::openManageSerieView()
 {
-    QScopedPointer<ManageSerieView> manageSerieView(new ManageSerieView);
+    ManageSerieView* manageSerieView = new ManageSerieView(this);
     manageSerieView->exec();
     m_positionView->updatePositions();
 }

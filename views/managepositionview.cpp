@@ -71,10 +71,10 @@ void ManagePositionView::populatePositionTable()
     m_originalPositions.clear();
     m_newPositions.clear();
 
-    QSqlQuery query = QSqlQuery("SELECT id, name, point FROM positions ORDER BY id");
+    QSqlQuery query = QSqlQuery("SELECT id, name, point FROM yoga_point WHERE is_serie IS NOT 1 ORDER BY id");
     while (query.next()) {
         int id = query.value(0).toInt();
-        QString name = query.value(1).toString();
+        std::string name = query.value(1).toString().toStdString();
         int point = query.value(2).toInt();
         Position position(name, point, id);
         m_originalPositions.append(position);
@@ -93,7 +93,7 @@ void ManagePositionView::setPositionOnTable(const Position& position, int row)
 {
     QTableWidgetItem* positionId = new QTableWidgetItem(QString::number(position.id()));
     m_positionTable->setItem(row, 0, positionId);
-    QTableWidgetItem* positionName = new QTableWidgetItem(position.name());
+    QTableWidgetItem* positionName = new QTableWidgetItem(QString::fromStdString(position.name()));
     m_positionTable->setItem(row, 1, positionName);
     QTableWidgetItem* positionPoint = new QTableWidgetItem(QString::number(position.calculatePoints()));
     m_positionTable->setItem(row, 2, positionPoint);
@@ -101,15 +101,23 @@ void ManagePositionView::setPositionOnTable(const Position& position, int row)
 
 void ManagePositionView::validate()
 {
-    for (Position position : m_newPositions) {
-        position.save(this);
+    try {
+        for (Position position : m_newPositions) {
+            position.save();
+        }
+    } catch (std::exception e) {
+        QMessageBox::critical(this, tr("Error"), e.what());
     }
 
     QList<Position> positionsToDelete;
     std::set_difference(m_originalPositions.begin(), m_originalPositions.end(), m_newPositions.begin(), m_newPositions.end(), std::inserter(positionsToDelete, positionsToDelete.begin()));
 
-    for (Position positionToDelete : positionsToDelete) {
-        positionToDelete.deleteFromDB(this);
+    try {
+        for (Position positionToDelete : positionsToDelete) {
+            positionToDelete.deleteFromDB();
+        }
+    } catch (std::exception e) {
+        QMessageBox::critical(this, tr("Error"), e.what());
     }
 
     //display this sentence only if there is at least one position deleted
@@ -128,7 +136,7 @@ void ManagePositionView::addNewPosition()
     AddPositionView* addPositionView = new AddPositionView(this);
     addPositionView->setModal(true);
     if (addPositionView->exec() == QDialog::Accepted) {
-        Position position(addPositionView->positionName(), addPositionView->point());
+        Position position(addPositionView->positionName().toStdString(), addPositionView->point());
         m_newPositions.append(position);
         m_positionTable->setRowCount(m_positionTable->rowCount() + 1);
         setPositionOnTable(position, m_newPositions.count() - 1);
@@ -159,7 +167,7 @@ void ManagePositionView::positionChanged(int row, int column)
     if (positionId && positionName && positionPoint) {
         m_validateButton->setEnabled(true);
         if (m_newPositions.size() > row && m_newPositions[row].id() == positionId->text().toInt()) {
-            m_newPositions[row].setName(positionName->text());
+            m_newPositions[row].setName(positionName->text().toStdString());
             m_newPositions[row].setPoint(positionPoint->text().toInt());
         }
     }

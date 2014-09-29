@@ -42,11 +42,15 @@ int AddPositionView::point()
 void AddPositionView::validateNewPosition()
 {
     //check if position name already exist
-    Position position = Position::positionFromDatabase(m_positionNameEdit->text(), this);
-    if (position.id() > 0) {
-        QMessageBox::information(this, tr("Position already exist"), tr("The position %1 already exist in database").arg(m_positionNameEdit->text()));
-    } else {
-        accept();
+    try {
+        Position position = Position::positionFromDatabase(m_positionNameEdit->text().toStdString());
+        if (position.id() > 0) {
+            QMessageBox::information(this, tr("Position already exist"), tr("The position %1 already exist in database").arg(m_positionNameEdit->text()));
+        } else {
+            accept();
+        }
+    } catch (std::exception e) {
+        QMessageBox::critical(this, tr("Error"), e.what());
     }
 }
 

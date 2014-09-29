@@ -19,7 +19,7 @@ public:
 private:
     QTableWidget *m_positionTable;
     QMap<QString, unsigned int> m_positionList;
-    QList<YogaPoint*> m_positions;
+    std::vector<std::shared_ptr<YogaPoint>> m_positions;
     QComboBox *m_addPositionComboBox;
     QSpinBox *m_addPositionSpinBox;
     QLabel *m_timesPointLabel;

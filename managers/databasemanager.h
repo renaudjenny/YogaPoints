@@ -14,7 +14,7 @@ public:
     bool openDB();
     bool deleteDB();
     QSqlError lastError();
-    void createDatabaseSchema(QWidget* window);
+    void createDatabaseSchema();
 private:
     QSqlDatabase db;
 
