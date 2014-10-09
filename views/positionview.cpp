@@ -86,7 +86,7 @@ void PositionView::updatePositions()
         QString positionName = selectPosition.value(1).toString();
         int positionPoint = selectPosition.value(2).toInt();
         m_positionList[positionName] = positionPoint;
-        m_positions.push_back(std::shared_ptr<YogaPoint>(new Position(positionName.toStdString(), positionPoint, positionId)));
+        m_positions.push_back(std::make_shared<Position>(Position(positionName.toStdString(), positionPoint, positionId)));
         positionCount++;
     }
 
@@ -110,7 +110,7 @@ void PositionView::updatePositions()
                 }
             }
         }
-        m_positions.push_back(std::shared_ptr<YogaPoint>(new Serie(serieName.toStdString(), yogaPoints, serieId)));
+        m_positions.push_back(std::make_shared<Serie>(Serie(serieName.toStdString(), yogaPoints, serieId)));
     }
 
     QStringList positionNames;
@@ -220,8 +220,10 @@ void PositionView::validateDailyPositions()
                 bool isSerie = YogaPoint::isSerie(positionName);
                 std::unique_ptr<YogaPoint> yogaPoint = 0;
                 if (isSerie) {
+                    //TODO C++14 Replace double memory allocation by std::make_unique<Serie>
                     yogaPoint = std::unique_ptr<YogaPoint>(new Serie(positionName, m_positions));
                 } else {
+                    //TODO C++14 Replace double memory allocation by std::make_unique<Position>
                     yogaPoint = std::unique_ptr<YogaPoint>(new Position(Position::positionFromDatabase(positionName)));
                 }
                 QString times = m_positionTable->item(i, 1)->text();
@@ -264,8 +266,10 @@ void PositionView::dateSelected(const QDate &date)
         m_positionTable->setRowCount(row + 1);
         std::unique_ptr<YogaPoint> yogaPoint = 0;
         if (isSerie) {
+            //TODO C++14 Replace double memory allocation by std::make_unique<Serie>
             yogaPoint = std::unique_ptr<YogaPoint>(new Serie(Serie::serieFromDatabase(positionId, m_positions)));
         } else {
+            //TODO C++14 Replace double memory allocation by std::make_unique<Position>
             yogaPoint = std::unique_ptr<YogaPoint>(new Position(Position::positionFromDatabase(positionId)));
         }
         QTableWidgetItem *positionNameItem = new QTableWidgetItem(QString::fromStdString(yogaPoint->name()));

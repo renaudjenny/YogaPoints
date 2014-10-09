@@ -65,7 +65,7 @@ void DatabaseManager::createDatabaseSchema()
                 for (QJsonObject::iterator it = positions.begin(); it != positions.end(); it++) {
                     string positionName = it.key().toStdString();
                     int positionPoint = it.value().toInt();
-                    shared_ptr<YogaPoint> position(new Position(positionName, positionPoint));
+                    shared_ptr<YogaPoint> position = make_shared<Position>(Position(positionName, positionPoint));
                     yogaPoints.push_back(position);
                     position->save();
                 }
@@ -80,7 +80,7 @@ void DatabaseManager::createDatabaseSchema()
                 QJsonObject series = serieJson.object();
                 for (QJsonObject::iterator it = series.begin(); it != series.end(); it++) {
                     string serieName = it.key().toStdString();
-                    shared_ptr<YogaPoint> serie(new Serie(serieName, yogaPoints));
+                    shared_ptr<YogaPoint> serie = make_shared<Serie>(Serie(serieName, yogaPoints));
                     yogaPoints.push_back(serie);
                     QJsonArray serieYogaPointNames = it.value().toArray();
                     for (QJsonArray::iterator iit = serieYogaPointNames.begin(); iit != serieYogaPointNames.end(); iit++) {

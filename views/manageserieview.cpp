@@ -71,7 +71,7 @@ void ManageSerieView::populateYogaPoint()
     QSqlQuery query("SELECT name, point, id FROM yoga_point");
     while (query.next()) {
         m_availableYogaPoint.push_back(
-            std::shared_ptr<YogaPoint>(new Position(query.value(0).toString().toStdString(), query.value(1).toInt(), query.value(2).toInt()))
+            std::make_shared<Position>(Position(query.value(0).toString().toStdString(), query.value(1).toInt(), query.value(2).toInt()))
         );
     }
     for (std::shared_ptr<YogaPoint> yogaPoint : m_availableYogaPoint) {
