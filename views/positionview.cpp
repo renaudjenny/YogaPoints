@@ -221,10 +221,10 @@ void PositionView::validateDailyPositions()
                 std::unique_ptr<YogaPoint> yogaPoint = 0;
                 if (isSerie) {
                     //TODO C++14 Replace double memory allocation by std::make_unique<Serie>
-                    yogaPoint = std::unique_ptr<YogaPoint>(new Serie(positionName, m_positions));
+                    yogaPoint = std::unique_ptr<Serie>(new Serie(Serie::serieFromDatabase(positionName, m_positions)));
                 } else {
                     //TODO C++14 Replace double memory allocation by std::make_unique<Position>
-                    yogaPoint = std::unique_ptr<YogaPoint>(new Position(Position::positionFromDatabase(positionName)));
+                    yogaPoint = std::unique_ptr<Position>(new Position(Position::positionFromDatabase(positionName)));
                 }
                 QString times = m_positionTable->item(i, 1)->text();
                 QSqlQuery insertDailyPositions;

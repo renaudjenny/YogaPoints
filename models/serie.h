@@ -8,6 +8,7 @@ class Serie : public YogaPoint
 {
 public:
     Serie();
+    Serie(const std::string &name, int id = 0);
     Serie(const std::string &name, std::vector<std::shared_ptr<YogaPoint>> yogaPositions, int id = 0);
     ~Serie();
     unsigned int calculatePoints() const;

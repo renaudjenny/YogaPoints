@@ -9,6 +9,10 @@ Serie::Serie()
 {
 }
 
+Serie::Serie(const string &name, int id) : YogaPoint(id, name)
+{
+}
+
 Serie::Serie(const string &name, vector<shared_ptr<YogaPoint>> yogaPositions, int id) : YogaPoint(id, name), m_yogaPoints(yogaPositions)
 {
 }
@@ -48,28 +52,28 @@ Serie Serie::serieFromDatabase(const string &serieName, vector<shared_ptr<YogaPo
 {
     Serie serie;
 
-    QSqlQuery query("SELECT id FROM yoga_point WHERE yoga_point.name = ? AND is_serie = 1");
+    QSqlQuery query("SELECT yoga_point.id, series.yoga_point_id FROM yoga_point INNER JOIN series ON yoga_point.id = series.id WHERE yoga_point.name = ? AND yoga_point.is_serie = 1");
     query.addBindValue(QString::fromStdString(serieName));
     if (!query.exec()) {
-        throw runtime_error("Database error" + query.lastError().text().toStdString());
+        throw runtime_error("Database error: " + query.lastError().text().toStdString());
     }
+    int id = -1;
+    vector<shared_ptr<YogaPoint>> positions;
     if (query.next()) {
-        int id = query.value(0).toInt();
-        QSqlQuery positionQuery("SELECT yoga_point_id FROM series WHERE id = ?");
-        positionQuery.addBindValue(id);
-        std::vector<shared_ptr<YogaPoint>> yogaPoints;
-        while (positionQuery.next()) {
-            int yogaPointId = query.value(1).toInt();
-            for (shared_ptr<YogaPoint> yogaPoint : availableYogaPoints) {
-                if (yogaPoint->id() == yogaPointId) {
-                    yogaPoints.push_back(yogaPoint);
-                }
+        if (id == -1) {
+            id = query.value(0).toInt();
+        }
+        int positionId = query.value(1).toInt();
+        for (shared_ptr<YogaPoint> yogaPoint : availableYogaPoints) {
+            if (yogaPoint->id() == positionId) {
+                positions.push_back(yogaPoint);
             }
         }
-        serie.setId(id);
-        serie.setName(serieName);
-        serie.setYogaPoints(yogaPoints);
     }
+
+    serie.setId(id);
+    serie.setName(serieName);
+    serie.setYogaPoints(positions);
 
     return serie;
 }
@@ -78,7 +82,7 @@ Serie Serie::serieFromDatabase(int serieId, vector<shared_ptr<YogaPoint>> availa
 {
     Serie serie;
 
-    QSqlQuery query("SELECT yoga_point.id, series.yoga_point_id FROM yoga_point WHERE yoga_point.id = ? AND yoga_point.is_serie = 1 INNER JOIN series ON yoga_point.id = series.id");
+    QSqlQuery query("SELECT yoga_point.name, series.yoga_point_id FROM yoga_point INNER JOIN series ON yoga_point.id = series.id WHERE yoga_point.id = ? AND yoga_point.is_serie = 1");
     query.addBindValue(serieId);
     if (!query.exec()) {
         throw runtime_error("Database error: " + query.lastError().text().toStdString());

@@ -78,14 +78,25 @@ void DatabaseManager::createDatabaseSchema()
                 serieJsonFile.close();
                 QJsonDocument serieJson = QJsonDocument::fromJson(jsonString.toUtf8());
                 QJsonObject series = serieJson.object();
+                map<string, vector<string>> serieStringMap;
+                map<string, shared_ptr<YogaPoint>> serieMap;
                 for (QJsonObject::iterator it = series.begin(); it != series.end(); it++) {
                     string serieName = it.key().toStdString();
-                    shared_ptr<YogaPoint> serie = make_shared<Serie>(Serie(serieName, yogaPoints));
+                    shared_ptr<YogaPoint> serie = make_shared<Serie>(Serie(serieName));
+                    serieMap[serieName] = serie;
                     yogaPoints.push_back(serie);
                     QJsonArray serieYogaPointNames = it.value().toArray();
+                    vector<string> serieYogaPoints;
                     for (QJsonArray::iterator iit = serieYogaPointNames.begin(); iit != serieYogaPointNames.end(); iit++) {
                         //find Yoga Point matching the name
                         string yogaPointName = (*iit).toString().toStdString();
+                        serieYogaPoints.push_back(yogaPointName);
+                    }
+                    serieStringMap[serieName] = serieYogaPoints;
+                }
+                for (pair<const string, vector<string>> element : serieStringMap) {
+                    shared_ptr<YogaPoint> serie = serieMap[element.first];
+                    for (string yogaPointName : element.second) {
                         auto yogaPointIt = find_if(yogaPoints.begin(), yogaPoints.end(), [&yogaPointName](shared_ptr<YogaPoint> yogaPoint) { return yogaPointName == yogaPoint->name(); });
                         if (yogaPointIt != yogaPoints.end()) {
                             dynamic_pointer_cast<Serie>(serie)->addYogaPoint(*yogaPointIt);

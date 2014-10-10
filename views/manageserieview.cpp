@@ -18,8 +18,8 @@ ManageSerieView::ManageSerieView(QWidget *parent) :
     m_positionsTable->setHorizontalHeaderLabels(positionTableHeaderLabels);
     m_positionsTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     m_yogaPointComboBox = new QComboBox;
-    m_addPositionButton = new QPushButton(tr("Add Position"));
-    m_removePositionButton = new QPushButton(tr("Remove Position"));
+    m_addPositionButton = new QPushButton(tr("Add Position/Serie"));
+    m_removePositionButton = new QPushButton(tr("Remove Position/Serie"));
     m_validateButton = new QPushButton(tr("Validate"));
     m_validateButton->setEnabled(false);
     m_cancelButton = new QPushButton(tr("Cancel"));
