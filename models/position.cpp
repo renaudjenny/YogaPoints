@@ -63,8 +63,6 @@ void Position::deleteFromDB()
     }
 }
 
-
-
 Position Position::positionFromDatabase(const string &positionName)
 {
     Position position;

@@ -25,11 +25,6 @@ unsigned int Serie::calculatePoints() const
 {
     unsigned int sum = 0;
     for_each(m_yogaPoints.begin(), m_yogaPoints.end(), [&sum](shared_ptr<YogaPoint> yogaPoint) { sum += yogaPoint->calculatePoints(); });
-    /*
-    for (auto it = m_yogaPoints.begin(); it != m_yogaPoints.end(); it++) {
-        sum += (*it)->calculatePoints();
-    }
-    */
     return sum;
 }
 
@@ -59,7 +54,7 @@ Serie Serie::serieFromDatabase(const string &serieName, vector<shared_ptr<YogaPo
     }
     int id = -1;
     vector<shared_ptr<YogaPoint>> positions;
-    if (query.next()) {
+    while (query.next()) {
         if (id == -1) {
             id = query.value(0).toInt();
         }
@@ -89,7 +84,7 @@ Serie Serie::serieFromDatabase(int serieId, vector<shared_ptr<YogaPoint>> availa
     }
     QString name = "Not found";
     vector<shared_ptr<YogaPoint>> positions;
-    if (query.next()) {
+    while (query.next()) {
         if (name == "Not found") {
             name = query.value(0).toString();
         }

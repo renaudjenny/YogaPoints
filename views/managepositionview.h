@@ -31,6 +31,7 @@ private:
     QPushButton* m_addNewPositionButton;
     QPushButton* m_deletePositionButton;
 
+    //TODO use std::vector instead of QList
     QList<Position> m_originalPositions;
     QList<Position> m_newPositions;
 

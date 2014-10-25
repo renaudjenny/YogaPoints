@@ -26,17 +26,22 @@ private:
     QPushButton* m_closeButton;
 
     std::vector<std::shared_ptr<YogaPoint>> m_availableYogaPoint;
+    //TODO use std::vector instead of QList
     QList<Serie> m_originalSeries;
     QList<Serie> m_newSeries;
+    int m_lastSelectedSerieIndex;
 
     void populateYogaPoint();
     void populateSerieComboBox();
     void populatePositionTable(const Serie &serie);
-    void setPositionOnTable(const Position& position, int row);
 signals:
 
 public slots:
     void serieSelected(int index);
+    void positionClicked(int row, int column);
+    void removePosition();
+    void addPosition();
+    void validate();
 };
 
 #endif // MANAGESERIEVIEW_H
